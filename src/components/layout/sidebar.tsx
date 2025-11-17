@@ -7,7 +7,6 @@ import {
   SidebarMenuButton,
   SidebarContent,
   SidebarSeparator,
-  SidebarFooter,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -22,7 +21,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import ApiStatus from '../features/ApiStatus';
 
 const mainMenuItems = [
   { href: '/', icon: Home, label: 'Beranda' },
@@ -99,9 +97,6 @@ export default function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
-        <ApiStatus />
-      </SidebarFooter>
     </Sidebar>
   );
 }

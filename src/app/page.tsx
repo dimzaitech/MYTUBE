@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import ApiStatus from '@/components/features/ApiStatus';
 
 function VideoSkeleton() {
   return (
@@ -83,6 +84,10 @@ export default function Home() {
             </Button>
           </div>
         </form>
+      </div>
+
+      <div className="mb-4">
+        <ApiStatus />
       </div>
 
       {loading ? (
