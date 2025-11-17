@@ -18,6 +18,7 @@ import {
   Clock,
   ThumbsUp,
   Star,
+  User,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -36,11 +37,18 @@ const libraryMenuItems = [
   { href: '#', icon: ThumbsUp, label: 'Video yang Disukai' },
 ];
 
-const premiumMenuItem = {
-  href: '#',
-  icon: Star,
-  label: 'Premium',
-};
+const secondaryMenuItems = [
+  {
+    href: '/profile',
+    icon: User,
+    label: 'Profil',
+  },
+  {
+    href: '#',
+    icon: Star,
+    label: 'Premium',
+  },
+];
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -83,18 +91,20 @@ export default function AppSidebar() {
         </SidebarMenu>
         <SidebarSeparator />
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === premiumMenuItem.href}
-              tooltip={premiumMenuItem.label}
-            >
-              <Link href={premiumMenuItem.href}>
-                <premiumMenuItem.icon />
-                <span>{premiumMenuItem.label}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {secondaryMenuItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarContent>
     </Sidebar>
