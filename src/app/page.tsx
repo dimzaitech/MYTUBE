@@ -10,7 +10,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import ApiStatusDynamic from '@/components/features/ApiStatusDynamic';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 
 export default function Home() {
@@ -74,10 +73,6 @@ export default function Home() {
             </Button>
           </div>
         </form>
-      </div>
-
-      <div className="mb-4">
-        <ApiStatusDynamic />
       </div>
 
       <VideoGridDynamic loading={loading} videos={videos} />
