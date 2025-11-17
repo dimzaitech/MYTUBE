@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ApiStatus from '@/components/features/ApiStatus';
+import ClientOnly from '@/components/ClientOnly';
 
 function VideoSkeleton() {
   return (
@@ -39,6 +40,7 @@ export default function Home() {
   const searchQuery = searchParams.get('q');
   const router = useRouter();
 
+  // Inisialisasi apiKeyManager hanya di sisi klien
   const apiKeyManager = useMemo(() => {
     if (typeof window === 'undefined') return null;
     const manager = new ApiKeyManager();
@@ -65,14 +67,20 @@ export default function Home() {
 
     const fetchVideos = async () => {
       setLoading(true);
-      let fetchedVideos: FormattedVideo[] = [];
-      if (searchQuery) {
-        fetchedVideos = await searchVideos(apiKeyManager, searchQuery);
-      } else {
-        fetchedVideos = await getTrendingVideos(apiKeyManager, 12);
+      try {
+        let fetchedVideos: FormattedVideo[] = [];
+        if (searchQuery) {
+          fetchedVideos = await searchVideos(apiKeyManager, searchQuery);
+        } else {
+          fetchedVideos = await getTrendingVideos(apiKeyManager, 12);
+        }
+        setVideos(fetchedVideos);
+      } catch (error) {
+        console.error('Failed to fetch videos:', error);
+        setVideos([]); // Kosongkan video jika terjadi error
+      } finally {
+        setLoading(false);
       }
-      setVideos(fetchedVideos);
-      setLoading(false);
     };
 
     fetchVideos();
@@ -105,22 +113,30 @@ export default function Home() {
         <ApiStatus />
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(12)].map((_, i) => (
-            <VideoSkeleton key={i} />
-          ))}
-        </div>
-      ) : videos && videos.length > 0 ? (
-        <VideoGrid videos={videos} />
-      ) : (
-        <div className="flex h-64 items-center justify-center">
-          <p>
-            Video tidak ditemukan. Kunci API YouTube mungkin hilang atau tidak
-            valid.
-          </p>
-        </div>
-      )}
+      <ClientOnly fallback={
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(12)].map((_, i) => (
+              <VideoSkeleton key={i} />
+            ))}
+          </div>
+      }>
+        {loading ? (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(12)].map((_, i) => (
+              <VideoSkeleton key={i} />
+            ))}
+          </div>
+        ) : videos && videos.length > 0 ? (
+          <VideoGrid videos={videos} />
+        ) : (
+          <div className="flex h-64 items-center justify-center">
+            <p>
+              Video tidak ditemukan. Kunci API YouTube mungkin hilang, tidak
+              valid, atau kuotanya habis.
+            </p>
+          </div>
+        )}
+      </ClientOnly>
     </>
   );
 }
