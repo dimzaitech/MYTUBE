@@ -124,7 +124,6 @@ class ApiKeyManager {
       activeKeys: this.apiKeys.length - this.failedKeys.size,
       requestCounts: this.requestCounts,
       failedKeys: Array.from(this.failedKeys),
-      apiKeys: this.apiKeys,
     };
   }
 }
