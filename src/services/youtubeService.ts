@@ -1,7 +1,7 @@
 'use client';
 
 import { YOUTUBE_API_URL } from '@/lib/config';
-import apiKeyManager from './apiKeyManager';
+import type ApiKeyManager from './apiKeyManager';
 
 export type FormattedVideo = {
   id: string;
@@ -90,7 +90,8 @@ function formatVideos(
 }
 
 async function fetchWithApiKeyRotation<T extends { items: any[] }>(
-  url: string
+  url: string,
+  apiKeyManager: ApiKeyManager
 ): Promise<T> {
   const maxRetries = apiKeyManager.apiKeys.length;
   let attempt = 0;
@@ -130,14 +131,16 @@ async function fetchWithApiKeyRotation<T extends { items: any[] }>(
 }
 
 async function fetchChannelAvatars(
-  channelIds: string[]
+  channelIds: string[],
+  apiKeyManager: ApiKeyManager
 ): Promise<Record<string, string>> {
   if (channelIds.length === 0) return {};
   const uniqueChannelIds = [...new Set(channelIds)];
 
   try {
     const data: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/channels?part=snippet&id=${uniqueChannelIds.join(',')}`
+      `${YOUTUBE_API_URL}/channels?part=snippet&id=${uniqueChannelIds.join(',')}`,
+      apiKeyManager
     );
     const avatars: Record<string, string> = {};
     if (data.items) {
@@ -153,33 +156,40 @@ async function fetchChannelAvatars(
 }
 
 async function processVideos(
-  videoItems: YouTubeVideoItem[]
+  videoItems: YouTubeVideoItem[],
+  apiKeyManager: ApiKeyManager
 ): Promise<FormattedVideo[]> {
   if (!videoItems || videoItems.length === 0) return [];
   
   const channelIds = videoItems.map((video) => video.snippet.channelId);
-  const channelAvatars = await fetchChannelAvatars(channelIds);
+  const channelAvatars = await fetchChannelAvatars(channelIds, apiKeyManager);
   return formatVideos(videoItems, channelAvatars);
 }
 
 export async function getTrendingVideos(
+  apiKeyManager: ApiKeyManager,
   maxResults = 12
 ): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`
+      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`,
+      apiKeyManager
     );
-    return await processVideos(data.items);
+    return await processVideos(data.items, apiKeyManager);
   } catch (error) {
     console.error('Error fetching trending videos:', error);
     return [];
   }
 }
 
-async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
+async function getVideoDetails(
+    videoIds: string,
+    apiKeyManager: ApiKeyManager
+    ): Promise<YouTubeVideoItem[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`
+      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`,
+      apiKeyManager
     );
     return data.items;
   } catch (error) {
@@ -189,12 +199,14 @@ async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
 }
 
 export async function searchVideos(
+  apiKeyManager: ApiKeyManager,
   query: string,
   maxResults = 12
 ): Promise<FormattedVideo[]> {
   try {
     const searchData: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video`
+      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video`,
+      apiKeyManager
     );
 
     const videoIds = searchData.items
@@ -205,8 +217,8 @@ export async function searchVideos(
 
     if (!videoIds) return [];
 
-    const videoDetails = await getVideoDetails(videoIds);
-    return await processVideos(videoDetails);
+    const videoDetails = await getVideoDetails(videoIds, apiKeyManager);
+    return await processVideos(videoDetails, apiKeyManager);
   } catch (error) {
     console.error('Error searching videos:', error);
     return [];

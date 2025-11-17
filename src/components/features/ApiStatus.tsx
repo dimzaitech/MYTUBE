@@ -1,21 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import apiKeyManager from '@/services/apiKeyManager';
+import ApiKeyManager from '@/services/apiKeyManager';
 import { Button } from '../ui/button';
 
-type ApiStatusState = ReturnType<typeof apiKeyManager.getStatus>;
+type ApiStatusState = ReturnType<ApiKeyManager['getStatus']>;
 
 function ApiStatus() {
   const [status, setStatus] = useState<ApiStatusState | null>(null);
   const [loading, setLoading] = useState(true);
-  const [_, setCurrentTime] = useState(new Date());
+  
+  const apiKeyManager = useMemo(() => {
+    // Pastikan ini hanya berjalan di klien
+    if (typeof window === 'undefined') return null;
+    const manager = new ApiKeyManager();
+    manager.initialize();
+    return manager;
+  }, []);
 
   useEffect(() => {
-    // Check if we are on the client side
-    if (typeof window === 'undefined') return;
-
+    if (!apiKeyManager) {
+        setLoading(true);
+        return;
+    };
+    
     // Initial status fetch
     setStatus(apiKeyManager.getStatus());
     setLoading(false);
@@ -24,32 +33,27 @@ function ApiStatus() {
       setStatus(apiKeyManager.getStatus());
     }, 5000);
 
-    const timeInterval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update time every minute
-
     return () => {
         clearInterval(statusInterval);
-        clearInterval(timeInterval);
     };
-  }, []);
+  }, [apiKeyManager]);
 
   const handleManualReset = () => {
-    if (apiKeyManager.manualReset()) {
+    if (apiKeyManager?.manualReset()) {
       setStatus(apiKeyManager.getStatus());
     }
   };
 
   const handleForceSwitch = () => {
-    apiKeyManager.forceSwitchKey();
+    apiKeyManager?.forceSwitchKey();
     setStatus(apiKeyManager.getStatus());
   };
   
-  if (loading) {
+  if (loading || !status) {
     return <Skeleton className="h-48 w-full mb-6" />;
   }
 
-  if (!status || status.totalKeys === 0) {
+  if (status.totalKeys === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground bg-card rounded-lg border-2 border-destructive mb-6">
         <h4>🔑 API KEY MANAGER</h4>
@@ -78,7 +82,7 @@ function ApiStatus() {
   };
 
   const totalRequests = Object.values(status.requestCounts).reduce((a, b) => a + b, 0);
-  const maxRequests = status.totalKeys * apiKeyManager.maxRequestsPerKey;
+  const maxRequests = apiKeyManager ? status.totalKeys * apiKeyManager.maxRequestsPerKey : 0;
   const totalUsagePercent = maxRequests > 0 ? (totalRequests / maxRequests) * 100 : 0;
 
   return (

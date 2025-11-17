@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import VideoGrid from '@/components/videos/video-grid';
 import {
   getTrendingVideos,
   searchVideos,
   type FormattedVideo,
 } from '@/services/youtubeService';
+import ApiKeyManager from '@/services/apiKeyManager';
 import { useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,13 @@ export default function Home() {
   const searchQuery = searchParams.get('q');
   const router = useRouter();
 
+  const apiKeyManager = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    const manager = new ApiKeyManager();
+    manager.initialize();
+    return manager;
+  }, []);
+
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -50,24 +58,25 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (!apiKeyManager) {
+      setLoading(true);
+      return;
+    }
+
     const fetchVideos = async () => {
       setLoading(true);
       let fetchedVideos: FormattedVideo[] = [];
       if (searchQuery) {
-        fetchedVideos = await searchVideos(searchQuery);
+        fetchedVideos = await searchVideos(apiKeyManager, searchQuery);
       } else {
-        fetchedVideos = await getTrendingVideos(12);
+        fetchedVideos = await getTrendingVideos(apiKeyManager, 12);
       }
       setVideos(fetchedVideos);
       setLoading(false);
     };
 
-    // We need to check for `window` to ensure this only runs on the client
-    // where apiKeyManager is initialized.
-    if (typeof window !== 'undefined') {
-        fetchVideos();
-    }
-  }, [searchQuery]);
+    fetchVideos();
+  }, [searchQuery, apiKeyManager]);
 
   return (
     <>

@@ -10,15 +10,17 @@ class ApiKeyManager {
   private lastResetTime: Date = new Date();
   public maxRequestsPerKey: number = 9000;
   private quotaResetHours: number = 24;
+  private isInitialized = false;
 
   constructor() {
-    // This check ensures the manager only runs on the client side
-    if (typeof window !== 'undefined') {
-      this.initialize();
-    }
+    // Constructor sengaja dikosongkan. Inisialisasi dipindah ke method `initialize`.
   }
 
   initialize() {
+    if (this.isInitialized || typeof window === 'undefined') {
+      return;
+    }
+
     this.apiKeys = Object.values(YOUTUBE_API_KEYS).filter(
       (key): key is string => !!key && key !== 'YOUR_YOUTUBE_API_KEY_HERE'
     );
@@ -48,6 +50,7 @@ class ApiKeyManager {
       parseInt(process.env.NEXT_PUBLIC_QUOTA_RESET_HOURS || '24', 10);
 
     this.startAutoReset();
+    this.isInitialized = true;
     console.log(`API Key Manager initialized with ${this.apiKeys.length} keys`);
   }
 
@@ -69,7 +72,7 @@ class ApiKeyManager {
       console.warn(`Failed to store ${key}:`, error);
     }
   }
-
+  
   private storeRequestCount(keyIndex: number, count: number) {
     this.setStoredValue(`youtube_api_requests_${keyIndex}`, count);
   }
@@ -78,16 +81,18 @@ class ApiKeyManager {
     this.lastResetTime = new Date();
     this.setStoredValue('youtube_api_last_reset', this.lastResetTime.toISOString());
   }
-
+  
   private storeFailedKeys() {
     this.setStoredValue('youtube_api_failed_keys', Array.from(this.failedKeys));
   }
-  
+
   private storeCurrentKeyIndex() {
     this.setStoredValue('youtube_api_current_index', this.currentKeyIndex);
   }
 
   startAutoReset() {
+    if (typeof window === 'undefined') return;
+    
     setInterval(() => {
       this.checkAndResetQuotas();
     }, 60 * 60 * 1000); // 1 hour
@@ -125,7 +130,7 @@ class ApiKeyManager {
 
       if (
         !this.failedKeys.has(nextIndex) &&
-        this.requestCounts[nextIndex] < this.maxRequestsPerKey
+        (this.requestCounts[nextIndex] || 0) < this.maxRequestsPerKey
       ) {
         this.currentKeyIndex = nextIndex;
         this.storeCurrentKeyIndex();
@@ -139,12 +144,12 @@ class ApiKeyManager {
   public markKeyFailed() {
     const keyIndex = this.currentKeyIndex;
     if (!this.failedKeys.has(keyIndex)) {
-        this.failedKeys.add(keyIndex);
-        this.storeFailedKeys();
-        console.warn(`❌ API Key ${keyIndex + 1} marked as failed`);
+      this.failedKeys.add(keyIndex);
+      this.storeFailedKeys();
+      console.warn(`❌ API Key ${keyIndex + 1} marked as failed`);
     }
   }
-  
+
   public handleFailedRequest(error: any) {
     const isQuotaError =
       error?.message?.includes('quota') ||
@@ -155,7 +160,6 @@ class ApiKeyManager {
       this.markKeyFailed();
     }
     
-    // Always try to get the next key on failure
     return this.getNextKey();
   }
 
@@ -171,13 +175,25 @@ class ApiKeyManager {
       );
       try {
         this.getNextKey();
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       }
     }
   }
 
   public getStatus() {
+    if (!this.isInitialized) {
+        return {
+          currentKeyIndex: 0,
+          totalKeys: 0,
+          activeKeys: 0,
+          requestCounts: {},
+          failedKeys: [],
+          lastReset: new Date(),
+          nextReset: new Date(),
+          hoursUntilReset: 0,
+        };
+    }
     const now = new Date();
     const nextReset = new Date(
       this.lastResetTime.getTime() + this.quotaResetHours * 60 * 60 * 1000
@@ -212,9 +228,9 @@ class ApiKeyManager {
   }
   
   public manualReset() {
-    if (confirm('Are you sure you want to reset all API keys? This will clear all request counts.')) {
-        this.resetAllKeys();
-        return true;
+    if (typeof window !== 'undefined' && confirm('Are you sure you want to reset all API keys? This will clear all request counts.')) {
+      this.resetAllKeys();
+      return true;
     }
     return false;
   }
@@ -231,6 +247,4 @@ class ApiKeyManager {
   }
 }
 
-// Create and export a singleton instance
-const apiKeyManager = new ApiKeyManager();
-export default apiKeyManager;
+export default ApiKeyManager;
