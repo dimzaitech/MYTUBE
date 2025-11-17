@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import VideoGrid from '@/components/videos/video-grid';
 import {
   getTrendingVideos,
   searchVideos,
   type FormattedVideo,
 } from '@/services/youtubeService';
-import ApiKeyManager from '@/services/apiKeyManager';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import ApiStatus from '@/components/features/ApiStatus';
 import ClientOnly from '@/components/ClientOnly';
 
@@ -40,14 +38,6 @@ export default function Home() {
   const searchQuery = searchParams.get('q');
   const router = useRouter();
 
-  // Inisialisasi apiKeyManager hanya di sisi klien
-  const apiKeyManager = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    const manager = new ApiKeyManager();
-    manager.initialize();
-    return manager;
-  }, []);
-
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -60,19 +50,14 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!apiKeyManager) {
-      setLoading(true);
-      return;
-    }
-
     const fetchVideos = async () => {
       setLoading(true);
       try {
         let fetchedVideos: FormattedVideo[] = [];
         if (searchQuery) {
-          fetchedVideos = await searchVideos(apiKeyManager, searchQuery);
+          fetchedVideos = await searchVideos(searchQuery);
         } else {
-          fetchedVideos = await getTrendingVideos(apiKeyManager, 12);
+          fetchedVideos = await getTrendingVideos(12);
         }
         setVideos(fetchedVideos);
       } catch (error) {
@@ -84,7 +69,7 @@ export default function Home() {
     };
 
     fetchVideos();
-  }, [searchQuery, apiKeyManager]);
+  }, [searchQuery]);
 
   return (
     <>
@@ -113,13 +98,15 @@ export default function Home() {
         <ApiStatus />
       </div>
 
-      <ClientOnly fallback={
+      <ClientOnly
+        fallback={
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(12)].map((_, i) => (
               <VideoSkeleton key={i} />
             ))}
           </div>
-      }>
+        }
+      >
         {loading ? (
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(12)].map((_, i) => (

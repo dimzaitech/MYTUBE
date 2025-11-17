@@ -1,250 +1,112 @@
 'use client';
 
-import { YOUTUBE_API_KEYS } from '@/lib/config';
-
 class ApiKeyManager {
-  public apiKeys: string[] = [];
-  public currentKeyIndex: number = 0;
-  private failedKeys: Set<number> = new Set();
-  public requestCounts: Record<number, number> = {};
-  private lastResetTime: Date = new Date();
-  public maxRequestsPerKey: number = 9000;
-  private quotaResetHours: number = 24;
-  private isInitialized = false;
+  public keys: string[] = [];
+  public currentIndex: number = 0;
+  public usedCount: Record<number, number> = {};
 
   constructor() {
-    // Constructor sengaja dikosongkan. Inisialisasi dipindah ke method `initialize`.
+    this.keys = [
+      process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_1,
+      process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_2,
+      process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_3,
+      process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_4,
+      process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_5,
+    ].filter((key): key is string => !!key);
+
+    // Default values untuk server rendering
+    this.currentIndex = 0;
+    this.usedCount = {};
+
+    // Initialize hanya di client
+    if (typeof window !== 'undefined') {
+      this.initializeClient();
+    }
   }
 
-  initialize() {
-    if (this.isInitialized || typeof window === 'undefined') {
-      return;
-    }
-
-    this.apiKeys = Object.values(YOUTUBE_API_KEYS).filter(
-      (key): key is string => !!key && key !== 'YOUR_YOUTUBE_API_KEY_HERE'
-    );
-
-    if (this.apiKeys.length === 0) {
-      console.error(
-        'No API keys configured! Please check your .env file for NEXT_PUBLIC_YOUTUBE_API_KEY variables.'
-      );
-    }
-
-    this.currentKeyIndex = this.getStoredValue('youtube_api_current_index', 0);
-    this.failedKeys = new Set(this.getStoredValue('youtube_api_failed_keys', []));
-    this.lastResetTime = new Date(
-      this.getStoredValue('youtube_api_last_reset', new Date().toISOString())
-    );
-
-    this.apiKeys.forEach((_, index) => {
-      this.requestCounts[index] = this.getStoredValue(
-        `youtube_api_requests_${index}`,
-        0
-      );
+  initializeClient() {
+    this.keys.forEach((_, i) => {
+      this.usedCount[i] = this.getStoredCount(i);
     });
 
-    this.maxRequestsPerKey =
-      parseInt(process.env.NEXT_PUBLIC_MAX_REQUESTS_PER_KEY || '9000', 10);
-    this.quotaResetHours =
-      parseInt(process.env.NEXT_PUBLIC_QUOTA_RESET_HOURS || '24', 10);
-
-    this.startAutoReset();
-    this.isInitialized = true;
-    console.log(`API Key Manager initialized with ${this.apiKeys.length} keys`);
+    this.startResetTimer();
   }
 
-  private getStoredValue<T>(key: string, defaultValue: T): T {
-    if (typeof window === 'undefined') return defaultValue;
+  getStoredCount(index: number): number {
     try {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : defaultValue;
+      return parseInt(localStorage.getItem(`yt_key_${index}`) || '0', 10);
     } catch {
-      return defaultValue;
+      return 0;
     }
   }
 
-  private setStoredValue<T>(key: string, value: T) {
-    if (typeof window === 'undefined') return;
+  storeCount(index: number, count: number) {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      localStorage.setItem(`yt_key_${index}`, count.toString());
     } catch (error) {
-      console.warn(`Failed to store ${key}:`, error);
+      console.warn('Failed to store count:', error);
     }
   }
-  
-  private storeRequestCount(keyIndex: number, count: number) {
-    this.setStoredValue(`youtube_api_requests_${keyIndex}`, count);
-  }
 
-  private storeResetTime() {
-    this.lastResetTime = new Date();
-    this.setStoredValue('youtube_api_last_reset', this.lastResetTime.toISOString());
-  }
-  
-  private storeFailedKeys() {
-    this.setStoredValue('youtube_api_failed_keys', Array.from(this.failedKeys));
-  }
-
-  private storeCurrentKeyIndex() {
-    this.setStoredValue('youtube_api_current_index', this.currentKeyIndex);
-  }
-
-  startAutoReset() {
-    if (typeof window === 'undefined') return;
-    
+  startResetTimer() {
+    // Reset setiap 24 jam
     setInterval(() => {
-      this.checkAndResetQuotas();
-    }, 60 * 60 * 1000); // 1 hour
-
-    this.checkAndResetQuotas();
+      this.resetAllCounts();
+    }, 24 * 60 * 60 * 1000);
   }
 
-  checkAndResetQuotas() {
-    const now = new Date();
-    const hoursSinceReset =
-      (now.getTime() - this.lastResetTime.getTime()) / (1000 * 60 * 60);
+  getCurrentKey(): string | undefined {
+    return this.keys[this.currentIndex];
+  }
 
-    if (hoursSinceReset >= this.quotaResetHours) {
-      console.log(
-        `🔄 ${this.quotaResetHours} hours passed, resetting all API keys...`
-      );
-      this.resetAllKeys();
+  useKey() {
+    if (typeof window === 'undefined') return;
+
+    const currentCount = (this.usedCount[this.currentIndex] || 0) + 1;
+    this.usedCount[this.currentIndex] = currentCount;
+    this.storeCount(this.currentIndex, currentCount);
+
+    if (currentCount > 8000) {
+      this.switchToNextKey();
     }
   }
 
-  public getCurrentKey(): string {
-    if (this.apiKeys.length === 0) {
-      return 'YOUR_YOUTUBE_API_KEY_HERE';
-    }
-    return this.apiKeys[this.currentKeyIndex];
-  }
+  switchToNextKey() {
+    if (this.keys.length === 0) return;
 
-  public getNextKey(): string {
-    if (this.apiKeys.length === 0) {
-      throw new Error('No API keys available.');
-    }
-
-    for (let i = 1; i <= this.apiKeys.length; i++) {
-      const nextIndex = (this.currentKeyIndex + i) % this.apiKeys.length;
-
-      if (
-        !this.failedKeys.has(nextIndex) &&
-        (this.requestCounts[nextIndex] || 0) < this.maxRequestsPerKey
-      ) {
-        this.currentKeyIndex = nextIndex;
-        this.storeCurrentKeyIndex();
-        console.log(`Switched to API Key ${this.currentKeyIndex + 1}`);
-        return this.apiKeys[this.currentKeyIndex];
-      }
-    }
-    throw new Error('All API keys quota exceeded or have failed.');
-  }
-
-  public markKeyFailed() {
-    const keyIndex = this.currentKeyIndex;
-    if (!this.failedKeys.has(keyIndex)) {
-      this.failedKeys.add(keyIndex);
-      this.storeFailedKeys();
-      console.warn(`❌ API Key ${keyIndex + 1} marked as failed`);
-    }
-  }
-
-  public handleFailedRequest(error: any) {
-    const isQuotaError =
-      error?.message?.includes('quota') ||
-      error?.message?.includes('exceeded') ||
-      error?.status === 403;
-
-    if (isQuotaError) {
-      this.markKeyFailed();
-    }
-    
-    return this.getNextKey();
-  }
-
-  public markRequestSuccess() {
-    if (this.apiKeys.length === 0) return;
-    const currentCount = (this.requestCounts[this.currentKeyIndex] || 0) + 1;
-    this.requestCounts[this.currentKeyIndex] = currentCount;
-    this.storeRequestCount(this.currentKeyIndex, currentCount);
-
-    if (currentCount >= this.maxRequestsPerKey * 0.9) {
-      console.log(
-        `⚠️ API Key ${this.currentKeyIndex + 1} approaching limit, switching...`
-      );
-      try {
-        this.getNextKey();
-      } catch (e) {
-        console.error(e);
+    for (let i = 1; i <= this.keys.length; i++) {
+      const nextIndex = (this.currentIndex + i) % this.keys.length;
+      if ((this.usedCount[nextIndex] || 0) < 9000) {
+        this.currentIndex = nextIndex;
+        return;
       }
     }
   }
 
-  public getStatus() {
-    if (!this.isInitialized) {
-        return {
-          currentKeyIndex: 0,
-          totalKeys: 0,
-          activeKeys: 0,
-          requestCounts: {},
-          failedKeys: [],
-          lastReset: new Date(),
-          nextReset: new Date(),
-          hoursUntilReset: 0,
-        };
-    }
-    const now = new Date();
-    const nextReset = new Date(
-      this.lastResetTime.getTime() + this.quotaResetHours * 60 * 60 * 1000
-    );
-    const hoursUntilReset =
-      (nextReset.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    return {
-      currentKeyIndex: this.currentKeyIndex,
-      totalKeys: this.apiKeys.length,
-      activeKeys: this.apiKeys.length - this.failedKeys.size,
-      requestCounts: this.requestCounts,
-      failedKeys: Array.from(this.failedKeys),
-      lastReset: this.lastResetTime,
-      nextReset: nextReset,
-      hoursUntilReset: Math.max(0, parseFloat(hoursUntilReset.toFixed(1))),
-    };
+  markFailed() {
+    if (typeof window === 'undefined') return;
+    this.switchToNextKey();
   }
 
-  private resetAllKeys() {
-    this.failedKeys.clear();
-    this.storeFailedKeys();
-    Object.keys(this.requestCounts).forEach((key) => {
-      const keyIndex = parseInt(key);
-      this.requestCounts[keyIndex] = 0;
-      this.storeRequestCount(keyIndex, 0);
+  resetAllCounts() {
+    if (typeof window === 'undefined') return;
+
+    console.log('🔄 Resetting all API key counts...');
+    this.keys.forEach((_, i) => {
+      this.usedCount[i] = 0;
+      this.storeCount(i, 0);
     });
-    this.currentKeyIndex = 0;
-    this.storeCurrentKeyIndex();
-    this.storeResetTime();
-    console.log('🎯 All API keys reset! Fresh start...');
-  }
-  
-  public manualReset() {
-    if (typeof window !== 'undefined' && confirm('Are you sure you want to reset all API keys? This will clear all request counts.')) {
-      this.resetAllKeys();
-      return true;
-    }
-    return false;
+    this.currentIndex = 0;
   }
 
-  public forceSwitchKey() {
-      const oldKey = this.currentKeyIndex + 1;
-      try {
-          this.getNextKey();
-          const newKey = this.currentKeyIndex + 1;
-          console.log(`🔀 Manually switched from Key ${oldKey} to Key ${newKey}`);
-      } catch (e) {
-          alert("Could not switch key: All other keys have failed or exceeded their quota.");
-      }
+  getStatus() {
+    return {
+      currentKey: this.currentIndex + 1,
+      totalKeys: this.keys.length,
+      usedCounts: { ...this.usedCount }, // Return copy
+    };
   }
 }
 
-export default ApiKeyManager;
+const apiKeyManager = new ApiKeyManager();
+export default apiKeyManager;
