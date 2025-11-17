@@ -7,7 +7,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-  title: 'MyTUBE Premium',
+  title: 'MyTUBE',
   description: 'A YouTube clone built with Next.js',
 };
 

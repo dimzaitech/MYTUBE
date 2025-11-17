@@ -12,9 +12,23 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 
+const categories = [
+  'All',
+  'Music',
+  'Gaming',
+  'Live',
+  'Mixes',
+  'Comedy',
+  'Trailers',
+  'Recently uploaded',
+  'Watched',
+  'New to you',
+];
+
 export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('All');
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
@@ -37,7 +51,10 @@ export default function Home() {
         let fetchedVideos: FormattedVideo[] = [];
         if (searchQuery) {
           fetchedVideos = await searchVideos(searchQuery);
+          setActiveCategory(''); // Reset category when searching
         } else {
+          // In a real app, you'd fetch videos based on the activeCategory
+          // For this demo, we'll just fetch trending videos for 'All' or default
           fetchedVideos = await getTrendingVideos(12);
         }
         setVideos(fetchedVideos);
@@ -73,6 +90,28 @@ export default function Home() {
             </Button>
           </div>
         </form>
+      </div>
+
+      <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-4 border-b bg-background/80 p-4 backdrop-blur-sm sm:-mx-6 sm:-mt-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8">
+        <div className="overflow-x-auto">
+          <div className="flex items-center gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={activeCategory === category ? 'default' : 'secondary'}
+                size="sm"
+                className="h-8 shrink-0 rounded-full"
+                onClick={() => {
+                  // On category click, we remove search query and set category
+                  setActiveCategory(category);
+                  router.push('/');
+                }}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <VideoGridDynamic loading={loading} videos={videos} />

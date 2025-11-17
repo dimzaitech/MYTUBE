@@ -1,6 +1,7 @@
 'use client';
 
-// Ganti dengan password yang lebih aman di aplikasi production
+// Ganti dengan password yang aman di aplikasi production
+// Ini hanya untuk demo, idealnya menggunakan sistem auth yang proper
 const ADMIN_PASSWORD = 'mysecretpassword123';
 
 export class SimpleAuth {

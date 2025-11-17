@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock } from 'lucide-react';
 import ClientOnly from '@/components/ClientOnly';
+import Link from 'next/link';
 
 function LoginForm() {
   const [password, setPassword] = useState('');
@@ -22,6 +23,7 @@ function LoginForm() {
       window.location.reload(); // Refresh halaman untuk menampilkan konten profil
     } else {
       setError('Password yang Anda masukkan salah.');
+      setPassword('');
     }
   };
 
@@ -32,10 +34,10 @@ function LoginForm() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
               <Lock className="mx-auto mb-2 h-8 w-8" />
-              Admin Area
+              Admin Login
             </CardTitle>
              <p className="text-sm text-muted-foreground pt-1">
-              Masukkan password untuk mengakses halaman ini.
+              Masukkan password untuk mengakses panel admin.
             </p>
           </CardHeader>
           <CardContent>
@@ -57,6 +59,13 @@ function LoginForm() {
                 Login
               </Button>
             </form>
+             <div className="mt-6 text-center">
+              <Button variant="link" size="sm" asChild>
+                <Link href="/">
+                  ← Kembali ke beranda
+                </Link>
+              </Button>
+          </div>
           </CardContent>
         </Card>
       </div>
@@ -95,52 +104,16 @@ function ProfileContent() {
                 </Avatar>
                 <div>
                   <CardTitle className="text-2xl">Admin</CardTitle>
-                  <p className="text-muted-foreground">Owner</p>
+                  <p className="text-muted-foreground">Owner • API Manager</p>
                 </div>
               </div>
               <Button variant="outline" onClick={handleLogout}>Logout</Button>
             </div>
           </CardHeader>
         </Card>
+        
+        <ApiStatusDynamic />
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Permintaan
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stats.totalRequests}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Kunci Aktif
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-400">
-                {stats.activeKeys}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Status Sistem
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-400">{stats.status}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <ApiStatusDynamic />
-        </div>
       </div>
     </ClientOnly>
   );

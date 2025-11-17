@@ -7,6 +7,8 @@ import {
   SidebarMenuButton,
   SidebarContent,
   SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -17,8 +19,10 @@ import {
   PlaySquare,
   Clock,
   ThumbsUp,
-  Star,
-  User,
+  Music,
+  Gamepad2,
+  Trophy,
+  Lightbulb,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -30,24 +34,17 @@ const mainMenuItems = [
 ];
 
 const libraryMenuItems = [
-  { href: '#', icon: Library, label: 'Library' },
   { href: '#', icon: History, label: 'Riwayat' },
   { href: '#', icon: PlaySquare, label: 'Video Anda' },
   { href: '#', icon: Clock, label: 'Tonton Nanti' },
   { href: '#', icon: ThumbsUp, label: 'Video yang Disukai' },
 ];
 
-const secondaryMenuItems = [
-  {
-    href: '/profile',
-    icon: User,
-    label: 'Profil',
-  },
-  {
-    href: '#',
-    icon: Star,
-    label: 'Premium',
-  },
+const exploreMenuItems = [
+  { href: '#', icon: Music, label: 'Musik' },
+  { href: '#', icon: Gamepad2, label: 'Game' },
+  { href: '#', icon: Trophy, label: 'Olahraga' },
+  { href: '#', icon: Lightbulb, label: 'Pelajaran' },
 ];
 
 export default function AppSidebar() {
@@ -61,7 +58,7 @@ export default function AppSidebar() {
             <SidebarMenuItem key={item.label}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
+                isActive={pathname === item.href && item.href === '/'}
                 tooltip={item.label}
               >
                 <Link href={item.href}>
@@ -73,39 +70,37 @@ export default function AppSidebar() {
           ))}
         </SidebarMenu>
         <SidebarSeparator />
-        <SidebarMenu>
-          {libraryMenuItems.map((item) => (
-            <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                tooltip={item.label}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+        <SidebarGroup>
+          <SidebarGroupLabel>Anda</SidebarGroupLabel>
+          <SidebarMenu>
+            {libraryMenuItems.map((item) => (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton asChild tooltip={item.label}>
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
         <SidebarSeparator />
-        <SidebarMenu>
-          {secondaryMenuItems.map((item) => (
-            <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                tooltip={item.label}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+        <SidebarGroup>
+          <SidebarGroupLabel>Jelajahi</SidebarGroupLabel>
+          <SidebarMenu>
+            {exploreMenuItems.map((item) => (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton asChild tooltip={item.label}>
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );

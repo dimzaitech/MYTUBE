@@ -1,16 +1,13 @@
 'use client';
 import { Search, Youtube, Bell, Upload, Menu, Settings } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useSidebar } from '../ui/sidebar';
 
 export default function Header() {
-  const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
   const router = useRouter();
   const { toggleSidebar } = useSidebar();
 
@@ -39,23 +36,23 @@ export default function Header() {
         </Button>
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <Youtube className="h-7 w-7 text-primary" />
-          <span className="text-lg">MyTUBE Premium</span>
+          <span className="text-lg">MyTUBE</span>
         </Link>
       </div>
 
       <div className="hidden flex-1 justify-center md:flex">
-        <form onSubmit={handleSearch} className="w-full max-w-md">
+        <form onSubmit={handleSearch} className="w-full max-w-2xl">
           <div className="relative">
             <Input
               name="q"
               placeholder="Cari..."
-              className="w-full rounded-full border-2 border-border bg-background pr-16"
+              className="w-full rounded-full border-2 border-input bg-transparent pr-16"
             />
             <Button
               type="submit"
               size="icon"
               variant="ghost"
-              className="absolute inset-y-0 right-0 h-full rounded-l-none rounded-r-full border-y-2 border-r-2 border-border bg-accent hover:bg-accent/80"
+              className="absolute inset-y-0 right-0 h-full rounded-l-none rounded-r-full border-y-2 border-r-2 border-border bg-accent/50 hover:bg-accent"
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -64,16 +61,16 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="h-9 w-9">
           <Upload className="h-5 w-5" />
           <span className="sr-only">Upload</span>
         </Button>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="h-9 w-9">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifikasi</span>
         </Button>
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/profile">
+        <Button variant="ghost" size="icon" asChild className="h-9 w-9">
+          <Link href="/profile" title="Admin Panel">
             <Settings className="h-5 w-5" />
             <span className="sr-only">Admin Panel</span>
           </Link>
