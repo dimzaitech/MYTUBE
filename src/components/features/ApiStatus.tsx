@@ -4,37 +4,32 @@ import { useState, useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ApiKeyManager from '@/services/apiKeyManager';
 import { Button } from '../ui/button';
+import ClientOnly from '../ClientOnly';
 
 type ApiStatusState = ReturnType<ApiKeyManager['getStatus']>;
 
-function ApiStatus() {
+function ApiStatusContent() {
   const [status, setStatus] = useState<ApiStatusState | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   const apiKeyManager = useMemo(() => {
-    // Pastikan ini hanya berjalan di klien
-    if (typeof window === 'undefined') return null;
+    // This is guaranteed to run on the client because of ClientOnly wrapper
     const manager = new ApiKeyManager();
     manager.initialize();
     return manager;
   }, []);
 
   useEffect(() => {
-    if (!apiKeyManager) {
-        setLoading(true);
-        return;
-    };
-    
     // Initial status fetch
     setStatus(apiKeyManager.getStatus());
     setLoading(false);
-    
+
     const statusInterval = setInterval(() => {
       setStatus(apiKeyManager.getStatus());
     }, 5000);
 
     return () => {
-        clearInterval(statusInterval);
+      clearInterval(statusInterval);
     };
   }, [apiKeyManager]);
 
@@ -48,7 +43,7 @@ function ApiStatus() {
     apiKeyManager?.forceSwitchKey();
     setStatus(apiKeyManager.getStatus());
   };
-  
+
   if (loading || !status) {
     return <Skeleton className="h-48 w-full mb-6" />;
   }
@@ -147,4 +142,11 @@ function ApiStatus() {
   );
 }
 
-export default ApiStatus;
+
+export default function ApiStatus() {
+    return (
+        <ClientOnly fallback={<Skeleton className="h-48 w-full mb-6" />}>
+            <ApiStatusContent />
+        </ClientOnly>
+    )
+}
