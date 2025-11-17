@@ -1,3 +1,106 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "video1",
+      "description": "Scenic mountain range",
+      "imageUrl": "https://images.unsplash.com/photo-1753611712717-3547b931acd0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtb3VudGFpbnMlMjBuYXR1cmV8ZW58MHx8fHwxNzYzMzYyMTgyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountains nature"
+    },
+    {
+      "id": "video2",
+      "description": "Modern office setup",
+      "imageUrl": "https://images.unsplash.com/photo-1519219788971-8d9797e0928e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxvZmZpY2UlMjBkZXNrfGVufDB8fHx8MTc2MzMxNjA4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "office desk"
+    },
+    {
+      "id": "video3",
+      "description": "Fresh pasta ingredients",
+      "imageUrl": "https://images.unsplash.com/photo-1714611446679-6059b55d824e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmb29kJTIwcGFzdGF8ZW58MHx8fHwxNzYzMzYyMTgyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food pasta"
+    },
+    {
+      "id": "video4",
+      "description": "Code on a screen",
+      "imageUrl": "https://images.unsplash.com/photo-1653387141060-9a9834f47777?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjb2RlJTIwcHJvZ3JhbW1pbmd8ZW58MHx8fHwxNzYzMjYyMTA5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "code programming"
+    },
+    {
+      "id": "video5",
+      "description": "Stylish living room",
+      "imageUrl": "https://images.unsplash.com/photo-1554995207-c18c203602cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxsaXZpbmclMjByb29tfGVufDB8fHx8MTc2MzM1MjczOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "living room"
+    },
+    {
+      "id": "video6",
+      "description": "Electric car charging",
+      "imageUrl": "https://images.unsplash.com/photo-1704475386627-dcfcd97ed51a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxlbGVjdHJpYyUyMGNhcnxlbnwwfHx8fDE3NjMzMzg0NjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "electric car"
+    },
+    {
+      "id": "video7",
+      "description": "Artist's tablet and stylus",
+      "imageUrl": "https://images.unsplash.com/photo-1641984790242-d8aa477d306c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkaWdpdGFsJTIwYXJ0fGVufDB8fHx8MTc2MzI4NjA3OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "digital art"
+    },
+    {
+      "id": "video8",
+      "description": "Video game controller",
+      "imageUrl": "https://images.unsplash.com/photo-1580234797602-22c37b2a6230?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z2FtaW5nJTIwY29udHJvbGxlcnxlbnwwfHx8fDE3NjMyNzgzNzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "gaming controller"
+    },
+    {
+      "id": "video9",
+      "description": "City skyline at dusk",
+      "imageUrl": "https://images.unsplash.com/photo-1493134799591-2c9eed26201a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjaXR5JTIwc2t5bGluZXxlbnwwfHx8fDE3NjMyNDkwOTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "city skyline"
+    },
+    {
+      "id": "video10",
+      "description": "Web development code",
+      "imageUrl": "https://images.unsplash.com/photo-1663342180037-7fe2e2abc7a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjc3MlMjBjb2RlfGVufDB8fHx8MTc2MzM2MjE4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "css code"
+    },
+    {
+      "id": "video11",
+      "description": "Galaxy with stars",
+      "imageUrl": "https://images.unsplash.com/photo-1539321908154-04927596764d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxnYWxheHklMjBzcGFjZXxlbnwwfHx8fDE3NjMzMTAxMzV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "galaxy space"
+    },
+    {
+      "id": "video12",
+      "description": "A cute cat",
+      "imageUrl": "https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYXQlMjBmdW5ueXxlbnwwfHx8fDE3NjMzNjIxODN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cat funny"
+    },
+    {
+      "id": "avatar1",
+      "description": "Portrait of a woman",
+      "imageUrl": "https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2MzMyODY5NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "avatar2",
+      "description": "Portrait of a man",
+      "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjMyODUxOTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "avatar3",
+      "description": "Abstract profile picture",
+      "imageUrl": "https://images.unsplash.com/photo-1541961017774-22349e4a1262?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhYnN0cmFjdCUyMGFydHxlbnwwfHx8fDE3NjMzMzM0ODF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract art"
+    },
+    {
+      "id": "avatar4",
+      "description": "Tech-themed profile picture",
+      "imageUrl": "https://images.unsplash.com/photo-1643732774973-ff2d0e610d7a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0ZWNoJTIwY2lyY3VpdHxlbnwwfHx8fDE3NjMzNjIxODJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tech circuit"
+    },
+    {
+      "id": "user-avatar",
+      "description": "Default user avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjMyNTYwOTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    }
+  ]
 }
