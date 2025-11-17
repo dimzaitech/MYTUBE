@@ -35,11 +35,14 @@ type YouTubeVideoItem = {
   };
 };
 
-function formatViews(views: string): string {
+function formatViews(views?: string): string {
+  if (!views) return '0 views';
   const num = parseInt(views, 10);
-  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
-  if (num >= 1_000) return (num / 1_000).toFixed(0) + 'K';
-  return views;
+  if (num >= 1_000_000_000)
+    return (num / 1_000_000_000).toFixed(1) + 'B views';
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M views';
+  if (num >= 1_000) return (num / 1_000).toFixed(0) + 'K views';
+  return views + ' views';
 }
 
 function formatTimeAgo(publishedAt: string): string {
@@ -51,12 +54,13 @@ function formatTimeAgo(publishedAt: string): string {
   interval = seconds / 2592000;
   if (interval > 1) return Math.floor(interval) + ' months ago';
   interval = seconds / 86400;
-  if (interval > 1) return Math.floor(interval) + ' days ago';
+  if (interval > 2) return Math.floor(interval) + ' days ago';
+  if (interval > 1) return '1 day ago';
   interval = seconds / 3600;
   if (interval > 1) return Math.floor(interval) + ' hours ago';
   interval = seconds / 60;
   if (interval > 1) return Math.floor(interval) + ' minutes ago';
-  return Math.floor(seconds) + ' seconds ago';
+  return 'just now';
 }
 
 function formatDuration(duration?: string): string {
@@ -67,7 +71,9 @@ function formatDuration(duration?: string): string {
   const minutes = parseInt(match[2]?.slice(0, -1) || '0', 10);
   const seconds = parseInt(match[3]?.slice(0, -1) || '0', 10);
   if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}`;
   }
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
@@ -81,7 +87,7 @@ function formatVideos(
     id: typeof video.id === 'object' ? video.id.videoId : video.id,
     title: video.snippet.title,
     channelName: video.snippet.channelTitle,
-    views: formatViews(video.statistics?.viewCount || '0'),
+    views: formatViews(video.statistics?.viewCount),
     uploadedAt: formatTimeAgo(video.snippet.publishedAt),
     duration: formatDuration(video.contentDetails?.duration),
     thumbnailUrl: video.snippet.thumbnails.high.url,
@@ -114,25 +120,30 @@ async function fetchWithApiKeyRotation<T extends { items: any[] }>(
       apiKeyManager.useKey();
       return await response.json();
     } catch (error: any) {
-      console.error(`API request with key ${apiKeyManager.currentIndex + 1} failed:`, error);
+      console.error(
+        `API request with key ${apiKeyManager.currentIndex + 1} failed:`,
+        error
+      );
       attempt++;
-      apiKeyManager.markFailed(); 
+      apiKeyManager.markFailed();
       console.log(`Retrying request... (${attempt}/${maxRetries})`);
     }
   }
-    
+
   throw new Error(`API request failed after ${maxRetries} retries.`);
 }
 
 async function fetchChannelAvatars(
-  channelIds: string[],
+  channelIds: string[]
 ): Promise<Record<string, string>> {
   if (channelIds.length === 0) return {};
   const uniqueChannelIds = [...new Set(channelIds)];
 
   try {
     const data: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/channels?part=snippet&id=${uniqueChannelIds.join(',')}`
+      `${YOUTUBE_API_URL}/channels?part=snippet&id=${uniqueChannelIds.join(
+        ','
+      )}`
     );
     const avatars: Record<string, string> = {};
     if (data.items) {
@@ -148,10 +159,10 @@ async function fetchChannelAvatars(
 }
 
 async function processVideos(
-  videoItems: YouTubeVideoItem[],
+  videoItems: YouTubeVideoItem[]
 ): Promise<FormattedVideo[]> {
   if (!videoItems || videoItems.length === 0) return [];
-  
+
   const channelIds = videoItems.map((video) => video.snippet.channelId);
   const channelAvatars = await fetchChannelAvatars(channelIds);
   return formatVideos(videoItems, channelAvatars);
@@ -162,7 +173,7 @@ export async function getTrendingVideos(
 ): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`
+      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}&regionCode=ID`
     );
     return await processVideos(data.items);
   } catch (error) {
@@ -171,9 +182,7 @@ export async function getTrendingVideos(
   }
 }
 
-async function getVideoDetails(
-    videoIds: string,
-    ): Promise<YouTubeVideoItem[]> {
+async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`
@@ -191,7 +200,7 @@ export async function searchVideos(
 ): Promise<FormattedVideo[]> {
   try {
     const searchData: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video`
+      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video&regionCode=ID`
     );
 
     const videoIds = searchData.items
@@ -203,7 +212,21 @@ export async function searchVideos(
     if (!videoIds) return [];
 
     const videoDetails = await getVideoDetails(videoIds);
-    return await processVideos(videoDetails);
+
+    // YouTube Search API doesn't return full details, so we merge
+    const searchResultsMap = new Map(
+      searchData.items.map((item: any) => [item.id.videoId, item.snippet])
+    );
+
+    const mergedDetails = videoDetails.map((detail) => {
+      const searchSnippet = searchResultsMap.get(detail.id as string);
+      if (searchSnippet) {
+        detail.snippet = { ...detail.snippet, ...searchSnippet };
+      }
+      return detail;
+    });
+
+    return await processVideos(mergedDetails);
   } catch (error) {
     console.error('Error searching videos:', error);
     return [];
