@@ -153,7 +153,9 @@ async function fetchWithApiKeyRotation<T>(
 // --- Exported API Functions ---
 
 // Ambil trending videos
-async function getTrendingVideos(maxResults = 12): Promise<FormattedVideo[]> {
+export async function getTrendingVideos(
+  maxResults = 12
+): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`
@@ -179,7 +181,7 @@ async function getVideoDetails(videoIds: string): Promise<FormattedVideo[]> {
 }
 
 // Search videos
-async function searchVideos(
+export async function searchVideos(
   query: string,
   maxResults = 12
 ): Promise<FormattedVideo[]> {
@@ -202,10 +204,3 @@ async function searchVideos(
     return [];
   }
 }
-
-const youtubeService = {
-  getTrendingVideos,
-  searchVideos,
-};
-
-export default youtubeService;

@@ -52,6 +52,7 @@ function ApiStatus() {
   }
 
   const getStatusColor = () => {
+    if (status.totalKeys === 0) return 'border-red-500 text-red-400';
     const activeRatio = status.activeKeys / status.totalKeys;
     if (activeRatio >= 0.6) return 'border-green-500 text-green-400';
     if (activeRatio >= 0.3) return 'border-orange-500 text-orange-400';
@@ -59,6 +60,7 @@ function ApiStatus() {
   };
 
   const getStatusBgColor = () => {
+    if (status.totalKeys === 0) return 'bg-red-500';
     const activeRatio = status.activeKeys / status.totalKeys;
     if (activeRatio >= 0.6) return 'bg-green-500';
     if (activeRatio >= 0.3) return 'bg-orange-500';
@@ -69,8 +71,9 @@ function ApiStatus() {
     (a, b) => a + b,
     0
   );
-  const maxRequests = status.totalKeys * 9000; // Asumsi dari kode sebelumnya
-  const totalUsagePercent = maxRequests > 0 ? (totalRequests / maxRequests) * 100 : 0;
+  const maxRequests = status.totalKeys * 9000;
+  const totalUsagePercent =
+    maxRequests > 0 ? (totalRequests / maxRequests) * 100 : 0;
 
   return (
     <div
@@ -123,23 +126,28 @@ function ApiStatus() {
                     : 'bg-muted'
                 } ${status.currentKeyIndex === index ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : ''}`}
               />
-              <small className="text-xs text-muted-foreground">{index + 1}</small>
+              <small className="text-xs text-muted-foreground">
+                {index + 1}
+              </small>
             </div>
           ))}
         </div>
       </div>
-      
+
       <div>
         <div className="flex justify-between text-xs mb-1">
           <span>Total Penggunaan Kuota</span>
           <span>
-            {totalRequests} / {maxRequests}
+            {totalRequests} / {maxRequests > 0 ? maxRequests : 'N/A'}
           </span>
         </div>
         <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full ${getStatusBgColor()}`}
-            style={{ width: `${totalUsagePercent}%`, transition: 'width 0.5s' }}
+            style={{
+              width: `${totalUsagePercent}%`,
+              transition: 'width 0.5s',
+            }}
           />
         </div>
       </div>

@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import VideoGrid from '@/components/videos/video-grid';
-import youtubeService, {
+import {
+  getTrendingVideos,
+  searchVideos,
   type FormattedVideo,
 } from '@/services/youtubeService';
 import { useSearchParams } from 'next/navigation';
@@ -52,9 +54,9 @@ export default function Home() {
       setLoading(true);
       let fetchedVideos: FormattedVideo[] = [];
       if (searchQuery) {
-        fetchedVideos = await youtubeService.searchVideos(searchQuery);
+        fetchedVideos = await searchVideos(searchQuery);
       } else {
-        fetchedVideos = await youtubeService.getTrendingVideos(12);
+        fetchedVideos = await getTrendingVideos(12);
       }
       setVideos(fetchedVideos);
       setLoading(false);

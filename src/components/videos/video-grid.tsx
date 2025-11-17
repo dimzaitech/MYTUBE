@@ -1,3 +1,5 @@
+'use client';
+
 import VideoCard from './video-card';
 import type { FormattedVideo } from '@/services/youtubeService';
 
