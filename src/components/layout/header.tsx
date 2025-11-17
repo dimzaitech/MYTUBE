@@ -1,5 +1,5 @@
 'use client';
-import { Search, Youtube } from 'lucide-react';
+import { Search, Youtube, Bell, Upload, Menu } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +7,12 @@ import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
+import { useSidebar } from '../ui/sidebar';
 
 export default function Header() {
   const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
   const router = useRouter();
+  const { toggleSidebar } = useSidebar();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,19 +27,28 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={toggleSidebar}
+        >
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Toggle Menu</span>
+        </Button>
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <Youtube className="h-7 w-7 text-primary" />
-          <span className="text-lg">MyTUBE</span>
+          <span className="text-lg">MyTUBE Premium</span>
         </Link>
       </div>
 
-      <div className="flex flex-1 justify-center">
+      <div className="hidden flex-1 justify-center md:flex">
         <form onSubmit={handleSearch} className="w-full max-w-md">
           <div className="relative">
             <Input
               name="q"
-              placeholder="Search"
+              placeholder="Cari..."
               className="w-full rounded-full border-2 border-border bg-background pr-16"
             />
             <Button
@@ -52,7 +63,15 @@ export default function Header() {
         </form>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon">
+          <Upload className="h-5 w-5" />
+          <span className="sr-only">Upload</span>
+        </Button>
+        <Button variant="ghost" size="icon">
+          <Bell className="h-5 w-5" />
+          <span className="sr-only">Notifikasi</span>
+        </Button>
         <Avatar className="h-9 w-9">
           <AvatarImage
             src={userAvatar?.imageUrl}

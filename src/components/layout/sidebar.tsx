@@ -6,6 +6,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarContent,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -13,17 +14,33 @@ import {
   Clapperboard,
   Library,
   History,
+  PlaySquare,
+  Clock,
+  ThumbsUp,
+  Star,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const menuItems = [
-  { href: '/', icon: Home, label: 'Home' },
+const mainMenuItems = [
+  { href: '/', icon: Home, label: 'Beranda' },
   { href: '#', icon: Flame, label: 'Trending' },
-  { href: '#', icon: Clapperboard, label: 'Subscriptions' },
-  { href: '#', icon: Library, label: 'Library' },
-  { href: '#', icon: History, label: 'History' },
+  { href: '#', icon: Clapperboard, label: 'Subscription' },
 ];
+
+const libraryMenuItems = [
+  { href: '#', icon: Library, label: 'Library' },
+  { href: '#', icon: History, label: 'Riwayat' },
+  { href: '#', icon: PlaySquare, label: 'Video Anda' },
+  { href: '#', icon: Clock, label: 'Tonton Nanti' },
+  { href: '#', icon: ThumbsUp, label: 'Video yang Disukai' },
+];
+
+const premiumMenuItem = {
+  href: '#',
+  icon: Star,
+  label: 'Premium',
+};
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -32,7 +49,7 @@ export default function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarMenu>
-          {menuItems.map((item) => (
+          {mainMenuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
               <SidebarMenuButton
                 asChild
@@ -46,6 +63,38 @@ export default function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+        </SidebarMenu>
+        <SidebarSeparator />
+        <SidebarMenu>
+          {libraryMenuItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+        <SidebarSeparator />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === premiumMenuItem.href}
+              tooltip={premiumMenuItem.label}
+            >
+              <Link href={premiumMenuItem.href}>
+                <premiumMenuItem.icon />
+                <span>{premiumMenuItem.label}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
     </Sidebar>

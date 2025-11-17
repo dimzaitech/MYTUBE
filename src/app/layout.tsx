@@ -7,7 +7,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-  title: 'MyTUBE',
+  title: 'MyTUBE Premium',
   description: 'A YouTube clone built with Next.js',
 };
 
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="id" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -37,7 +37,7 @@ export default function RootLayout({
             <div className="flex flex-1">
               <AppSidebar />
               <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                <Suspense fallback={<div>Loading...</div>}>
+                <Suspense fallback={<div>Memuat...</div>}>
                   {children}
                 </Suspense>
               </main>
