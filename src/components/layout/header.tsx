@@ -5,9 +5,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useRouter } from 'next/navigation';
+import type React from 'react';
 
 export default function Header() {
   const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('q') as string;
+    if (query.trim()) {
+      router.push(`/?q=${encodeURIComponent(query)}`);
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
       <div className="flex items-center gap-4">
@@ -18,9 +33,10 @@ export default function Header() {
       </div>
 
       <div className="flex flex-1 justify-center">
-        <form className="w-full max-w-md">
+        <form onSubmit={handleSearch} className="w-full max-w-md">
           <div className="relative">
             <Input
+              name="q"
               placeholder="Search"
               className="w-full rounded-full border-2 border-border bg-background pr-16"
             />

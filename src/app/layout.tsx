@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/header';
+import AppSidebar from '@/components/layout/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'MyTUBE',
@@ -28,10 +31,19 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <div className="flex min-h-screen w-full flex-col">
-          <Header />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
-        </div>
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full flex-col">
+            <Header />
+            <div className="flex flex-1">
+              <AppSidebar />
+              <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                <Suspense fallback={<div>Loading...</div>}>
+                  {children}
+                </Suspense>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
         <Toaster />
       </body>
     </html>

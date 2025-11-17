@@ -1,19 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { FormattedVideo } from '@/services/youtubeService';
 
-type Video = {
-  id: string;
-  title: string;
-  channelName: string;
-  channelAvatarUrl: string;
-  views: string;
-  uploadedAt: string;
-  duration: string;
-  thumbnailUrl: string;
-};
-
-export default function VideoCard({ video }: { video: Video }) {
+export default function VideoCard({ video }: { video: FormattedVideo }) {
   return (
     <Link href="#" className="group block">
       <div className="flex flex-col gap-3">
@@ -21,8 +11,9 @@ export default function VideoCard({ video }: { video: Video }) {
           <Image
             src={video.thumbnailUrl}
             alt={video.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            width={320}
+            height={180}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             data-ai-hint="video thumbnail"
           />
           <span className="absolute bottom-2 right-2 rounded bg-black/70 px-1.5 py-0.5 text-xs text-white">
