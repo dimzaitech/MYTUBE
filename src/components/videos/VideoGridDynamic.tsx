@@ -37,7 +37,7 @@ export default function VideoGridDynamic({
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-        {[...Array(12)].map((_, i) => (
+        {[...Array(24)].map((_, i) => (
           <VideoSkeleton key={i} />
         ))}
       </div>
@@ -58,7 +58,7 @@ export default function VideoGridDynamic({
           Video tidak ditemukan
         </h3>
         <p className="text-sm text-muted-foreground">
-          Kunci API YouTube mungkin hilang, tidak valid, atau kuotanya habis.
+          Kunci API YouTube mungkin hilang, tidak valid, atau kuotanya habis. Coba cari dengan kata kunci lain.
         </p>
       </div>
     </div>

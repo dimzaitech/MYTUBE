@@ -36,13 +36,13 @@ type YouTubeVideoItem = {
 };
 
 function formatViews(views?: string): string {
-  if (!views) return '0 views';
+  if (!views) return '0 tayangan';
   const num = parseInt(views, 10);
   if (num >= 1_000_000_000)
-    return (num / 1_000_000_000).toFixed(1) + 'B views';
-  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M views';
-  if (num >= 1_000) return (num / 1_000).toFixed(0) + 'K views';
-  return views + ' views';
+    return (num / 1_000_000_000).toFixed(1) + 'Mrd x ditonton';
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + ' jt x ditonton';
+  if (num >= 1_000) return (num / 1_000).toFixed(0) + ' rb x ditonton';
+  return views + ' x ditonton';
 }
 
 function formatTimeAgo(publishedAt: string): string {
@@ -50,17 +50,17 @@ function formatTimeAgo(publishedAt: string): string {
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   let interval = seconds / 31536000;
-  if (interval > 1) return Math.floor(interval) + ' years ago';
+  if (interval > 1) return Math.floor(interval) + ' tahun yang lalu';
   interval = seconds / 2592000;
-  if (interval > 1) return Math.floor(interval) + ' months ago';
+  if (interval > 1) return Math.floor(interval) + ' bulan yang lalu';
   interval = seconds / 86400;
-  if (interval > 2) return Math.floor(interval) + ' days ago';
-  if (interval > 1) return '1 day ago';
+  if (interval > 2) return Math.floor(interval) + ' hari yang lalu';
+  if (interval > 1) return '1 hari yang lalu';
   interval = seconds / 3600;
-  if (interval > 1) return Math.floor(interval) + ' hours ago';
+  if (interval > 1) return Math.floor(interval) + ' jam yang lalu';
   interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + ' minutes ago';
-  return 'just now';
+  if (interval > 1) return Math.floor(interval) + ' menit yang lalu';
+  return 'baru saja';
 }
 
 function formatDuration(duration?: string): string {

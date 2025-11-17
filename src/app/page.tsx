@@ -27,6 +27,20 @@ const categories = [
   'Komedi',
 ];
 
+const categoryQueries: Record<string, string> = {
+  Musik: 'music official audio',
+  Karaoke: 'karaoke lyrics',
+  Berita: 'berita terbaru hari ini',
+  Hobby: 'hobby DIY tutorial',
+  Live: 'live streaming now',
+  Kuliner: 'resep masakan mukbang',
+  Film: 'movie trailer film',
+  Horor: 'cerita horor scary',
+  Kartun: 'cartoon animation anime',
+  Travelling: 'travel vlog vacation',
+  Komedi: 'stand up comedy lucu',
+};
+
 export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,31 +60,47 @@ export default function Home() {
     }
   };
 
+  const handleCategorySelect = (category: string) => {
+    // Clear search query from URL when a category is clicked
+    router.push('/', { scroll: false });
+    setActiveCategory(category);
+  };
+
   useEffect(() => {
     const fetchVideos = async () => {
       setLoading(true);
       try {
         let fetchedVideos: FormattedVideo[] = [];
+        // Priority 1: Direct search query from URL
         if (searchQuery) {
-          fetchedVideos = await searchVideos(searchQuery);
           setActiveCategory(''); // Reset category when searching
-        } else {
-          // In a real app, you'd fetch videos based on the activeCategory
-          // For this demo, we'll just fetch trending videos for 'All' or default
-          fetchedVideos = await getTrendingVideos(12);
-          setActiveCategory('Semua');
+          fetchedVideos = await searchVideos(searchQuery, 24);
+        }
+        // Priority 2: Active category is 'Semua' (All)
+        else if (activeCategory === 'Semua') {
+          fetchedVideos = await getTrendingVideos(24);
+        }
+        // Priority 3: Active category is anything else
+        else {
+          const query = categoryQueries[activeCategory];
+          if (query) {
+            fetchedVideos = await searchVideos(query, 24);
+          } else {
+            // Fallback to trending if category query is not found
+            fetchedVideos = await getTrendingVideos(24);
+          }
         }
         setVideos(fetchedVideos);
       } catch (error) {
         console.error('Failed to fetch videos:', error);
-        setVideos([]); // Kosongkan video jika terjadi error
+        setVideos([]); // Clear videos on error
       } finally {
         setLoading(false);
       }
     };
 
     fetchVideos();
-  }, [searchQuery]);
+  }, [searchQuery, activeCategory]);
 
   return (
     <>
@@ -103,12 +133,8 @@ export default function Home() {
                 key={category}
                 variant={activeCategory === category ? 'default' : 'secondary'}
                 size="sm"
-                className="h-8 shrink-0 rounded-full px-3 py-1.5 md:px-4 md:py-2"
-                onClick={() => {
-                  // On category click, we remove search query and set category
-                  setActiveCategory(category);
-                  router.push('/');
-                }}
+                className="h-8 shrink-0 rounded-full px-3 py-1.5 transition-colors md:px-4 md:py-2"
+                onClick={() => handleCategorySelect(category)}
               >
                 {category}
               </Button>
@@ -116,6 +142,18 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {activeCategory !== 'Semua' && !searchQuery && (
+         <div className="mb-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:mb-6 md:p-4">
+            <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
+                Kategori: {activeCategory}
+            </h2>
+            <p className="text-sm text-blue-300">
+                Menampilkan video yang relevan dengan {activeCategory.toLowerCase()}
+            </p>
+         </div>
+      )}
+
 
       <VideoGridDynamic loading={loading} videos={videos} />
     </>
