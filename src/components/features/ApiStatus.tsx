@@ -13,11 +13,12 @@ function ApiStatus() {
   const [_, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    // Initial status fetch might need a slight delay for manager to initialize
-    const timer = setTimeout(() => {
-        setStatus(apiKeyManager.getStatus());
-        setLoading(false);
-    }, 100);
+    // Check if we are on the client side
+    if (typeof window === 'undefined') return;
+
+    // Initial status fetch
+    setStatus(apiKeyManager.getStatus());
+    setLoading(false);
     
     const statusInterval = setInterval(() => {
       setStatus(apiKeyManager.getStatus());
@@ -28,7 +29,6 @@ function ApiStatus() {
     }, 60000); // Update time every minute
 
     return () => {
-        clearTimeout(timer);
         clearInterval(statusInterval);
         clearInterval(timeInterval);
     };

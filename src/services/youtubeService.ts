@@ -72,7 +72,10 @@ function formatDuration(duration?: string): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
-function formatVideos(videos: YouTubeVideoItem[]): FormattedVideo[] {
+function formatVideos(
+  videos: YouTubeVideoItem[],
+  channelAvatars: Record<string, string>
+): FormattedVideo[] {
   if (!videos) return [];
   return videos.map((video) => ({
     id: typeof video.id === 'object' ? video.id.videoId : video.id,
@@ -82,22 +85,24 @@ function formatVideos(videos: YouTubeVideoItem[]): FormattedVideo[] {
     uploadedAt: formatTimeAgo(video.snippet.publishedAt),
     duration: formatDuration(video.contentDetails?.duration),
     thumbnailUrl: video.snippet.thumbnails.high.url,
-    channelAvatarUrl: '',
+    channelAvatarUrl: channelAvatars[video.snippet.channelId] || '',
   }));
 }
 
-async function fetchWithApiKeyRotation<T>(url: string): Promise<T> {
-  const maxRetries = apiKeyManager.requestCounts ? Object.keys(apiKeyManager.requestCounts).length : 1;
+async function fetchWithApiKeyRotation<T extends { items: any[] }>(
+  url: string
+): Promise<T> {
+  const maxRetries = apiKeyManager.apiKeys.length;
   let attempt = 0;
 
   while (attempt < maxRetries) {
-    try {
-      const currentKey = apiKeyManager.getCurrentKey();
-      if (currentKey === 'YOUR_YOUTUBE_API_KEY_HERE') {
-        console.warn('YouTube API key is not set.');
-        return { items: [] } as unknown as T;
-      }
+    const currentKey = apiKeyManager.getCurrentKey();
+    if (currentKey === 'YOUR_YOUTUBE_API_KEY_HERE') {
+      console.warn('YouTube API key is not set.');
+      return { items: [] } as T;
+    }
 
+    try {
       const fullUrl = `${url}&key=${currentKey}`;
       const response = await fetch(fullUrl);
 
@@ -108,55 +113,100 @@ async function fetchWithApiKeyRotation<T>(url: string): Promise<T> {
 
       apiKeyManager.markRequestSuccess();
       return await response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
+    } catch (error: any) {
+      console.error(`API request with key ${apiKeyManager.currentKeyIndex + 1} failed:`, error);
       attempt++;
       try {
-        apiKeyManager.handleFailedRequest(error);
+        apiKeyManager.handleFailedRequest(error); // This will switch the key
         console.log(`Retrying request... (${attempt}/${maxRetries})`);
       } catch (e) {
         console.error('All API keys failed. No more keys to switch to.');
-        throw e;
+        throw e; // Re-throw the final error
       }
     }
   }
+
   throw new Error(`API request failed after ${maxRetries} retries.`);
 }
 
-export async function getTrendingVideos(maxResults = 12): Promise<FormattedVideo[]> {
+async function fetchChannelAvatars(
+  channelIds: string[]
+): Promise<Record<string, string>> {
+  if (channelIds.length === 0) return {};
+  const uniqueChannelIds = [...new Set(channelIds)];
+
+  try {
+    const data: any = await fetchWithApiKeyRotation(
+      `${YOUTUBE_API_URL}/channels?part=snippet&id=${uniqueChannelIds.join(',')}`
+    );
+    const avatars: Record<string, string> = {};
+    if (data.items) {
+      data.items.forEach((channel: any) => {
+        avatars[channel.id] = channel.snippet.thumbnails.default.url;
+      });
+    }
+    return avatars;
+  } catch (error) {
+    console.error('Error fetching channel avatars:', error);
+    return {}; // Return empty object on failure
+  }
+}
+
+async function processVideos(
+  videoItems: YouTubeVideoItem[]
+): Promise<FormattedVideo[]> {
+  if (!videoItems || videoItems.length === 0) return [];
+  
+  const channelIds = videoItems.map((video) => video.snippet.channelId);
+  const channelAvatars = await fetchChannelAvatars(channelIds);
+  return formatVideos(videoItems, channelAvatars);
+}
+
+export async function getTrendingVideos(
+  maxResults = 12
+): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`
     );
-    return formatVideos(data.items);
+    return await processVideos(data.items);
   } catch (error) {
     console.error('Error fetching trending videos:', error);
     return [];
   }
 }
 
-async function getVideoDetails(videoIds: string): Promise<FormattedVideo[]> {
+async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`
     );
-    return formatVideos(data.items);
+    return data.items;
   } catch (error) {
     console.error('Error fetching video details:', error);
     return [];
   }
 }
 
-export async function searchVideos(query: string, maxResults = 12): Promise<FormattedVideo[]> {
+export async function searchVideos(
+  query: string,
+  maxResults = 12
+): Promise<FormattedVideo[]> {
   try {
-    const data: any = await fetchWithApiKeyRotation(
+    const searchData: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video`
     );
-    const videoIds = data.items
-      .map((item: YouTubeVideoItem) => (typeof item.id === 'object' ? item.id.videoId : item.id))
+
+    const videoIds = searchData.items
+      .map((item: YouTubeVideoItem) =>
+        typeof item.id === 'object' ? item.id.videoId : item.id
+      )
       .join(',');
+
     if (!videoIds) return [];
-    return getVideoDetails(videoIds);
+
+    const videoDetails = await getVideoDetails(videoIds);
+    return await processVideos(videoDetails);
   } catch (error) {
     console.error('Error searching videos:', error);
     return [];
