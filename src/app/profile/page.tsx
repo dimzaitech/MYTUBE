@@ -29,14 +29,14 @@ function LoginForm() {
 
   return (
     <ClientOnly>
-       <div className="flex min-h-[calc(100vh-12rem)] flex-1 items-center justify-center rounded-lg">
+      <div className="flex min-h-[calc(100vh-12rem)] flex-1 items-center justify-center rounded-lg">
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">
+            <CardTitle className="text-xl md:text-2xl">
               <Lock className="mx-auto mb-2 h-8 w-8" />
               Admin Login
             </CardTitle>
-             <p className="text-sm text-muted-foreground pt-1">
+            <p className="pt-1 text-sm text-muted-foreground">
               Masukkan password untuk mengakses panel admin.
             </p>
           </CardHeader>
@@ -59,13 +59,11 @@ function LoginForm() {
                 Login
               </Button>
             </form>
-             <div className="mt-6 text-center">
+            <div className="mt-6 text-center">
               <Button variant="link" size="sm" asChild>
-                <Link href="/">
-                  ← Kembali ke beranda
-                </Link>
+                <Link href="/">← Kembali ke beranda</Link>
               </Button>
-          </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -80,7 +78,7 @@ function ProfileContent() {
     SimpleAuth.logout();
     window.location.reload(); // Refresh untuk menampilkan form login
   };
-  
+
   const stats = {
     totalRequests: '1,247',
     activeKeys: '5/5',
@@ -88,32 +86,42 @@ function ProfileContent() {
   };
 
   return (
-     <ClientOnly>
-      <div className="space-y-6">
+    <ClientOnly>
+      <div className="space-y-4 md:space-y-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="p-4 md:p-6">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
+              <div className="flex items-center gap-3 md:gap-4">
+                <Avatar className="h-12 w-12 md:h-16 md:w-16">
                   <AvatarImage
                     src={userAvatar?.imageUrl}
                     alt="Admin"
                     data-ai-hint={userAvatar?.imageHint}
                   />
-                  <AvatarFallback className="text-2xl">A</AvatarFallback>
+                  <AvatarFallback className="text-lg md:text-2xl">
+                    A
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-2xl">Admin</CardTitle>
-                  <p className="text-muted-foreground">Owner • API Manager</p>
+                  <CardTitle className="text-lg md:text-2xl">Admin</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Owner • API Manager
+                  </p>
                 </div>
               </div>
-              <Button variant="outline" onClick={handleLogout}>Logout</Button>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                size="sm"
+                className="text-xs md:text-sm"
+              >
+                Logout
+              </Button>
             </div>
           </CardHeader>
         </Card>
-        
-        <ApiStatusDynamic />
 
+        <ApiStatusDynamic />
       </div>
     </ClientOnly>
   );
