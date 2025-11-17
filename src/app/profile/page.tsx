@@ -1,29 +1,76 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import ApiStatusDynamic from '@/components/features/ApiStatusDynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { SimpleAuth } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Lock } from 'lucide-react';
+import ClientOnly from '@/components/ClientOnly';
 
-export default function ProfilePage() {
-  // Autentikasi sederhana, bisa diganti dengan logic yang lebih canggih
-  const isAuthenticated = true;
+function LoginForm() {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (SimpleAuth.login(password)) {
+      window.location.reload(); // Refresh halaman untuk menampilkan konten profil
+    } else {
+      setError('Password yang Anda masukkan salah.');
+    }
+  };
+
+  return (
+    <ClientOnly>
+       <div className="flex min-h-[calc(100vh-12rem)] flex-1 items-center justify-center rounded-lg">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">
+              <Lock className="mx-auto mb-2 h-8 w-8" />
+              Admin Area
+            </CardTitle>
+             <p className="text-sm text-muted-foreground pt-1">
+              Masukkan password untuk mengakses halaman ini.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Password default: admin123"
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" className="w-full">
+                Login
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </ClientOnly>
+  );
+}
+
+function ProfileContent() {
   const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex h-full flex-1 items-center justify-center rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Akses Ditolak</h1>
-          <p className="text-muted-foreground">
-            Anda tidak memiliki izin untuk melihat halaman ini.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Data dummy untuk statistik
+  const handleLogout = () => {
+    SimpleAuth.logout();
+    window.location.reload(); // Refresh untuk menampilkan form login
+  };
+  
   const stats = {
     totalRequests: '1,247',
     activeKeys: '5/5',
@@ -31,64 +78,86 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage
-                src={userAvatar?.imageUrl}
-                alt="Admin"
-                data-ai-hint={userAvatar?.imageHint}
-              />
-              <AvatarFallback className="text-2xl">A</AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-2xl">Admin</CardTitle>
-              <p className="text-muted-foreground">Owner</p>
+     <ClientOnly>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage
+                    src={userAvatar?.imageUrl}
+                    alt="Admin"
+                    data-ai-hint={userAvatar?.imageHint}
+                  />
+                  <AvatarFallback className="text-2xl">A</AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle className="text-2xl">Admin</CardTitle>
+                  <p className="text-muted-foreground">Owner</p>
+                </div>
+              </div>
+              <Button variant="outline" onClick={handleLogout}>Logout</Button>
             </div>
-          </div>
-        </CardHeader>
-      </Card>
+          </CardHeader>
+        </Card>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Permintaan
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.totalRequests}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Kunci Aktif
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-green-400">
-              {stats.activeKeys}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Status Sistem
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-green-400">{stats.status}</p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Permintaan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{stats.totalRequests}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Kunci Aktif
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-green-400">
+                {stats.activeKeys}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Status Sistem
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-green-400">{stats.status}</p>
+            </CardContent>
+          </Card>
+        </div>
 
-      <div>
-        <ApiStatusDynamic />
+        <div>
+          <ApiStatusDynamic />
+        </div>
       </div>
-    </div>
+    </ClientOnly>
   );
 }
+
+export default function ProfilePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    setIsAuthenticated(SimpleAuth.isAuthenticated());
+  }, []);
+
+  if (!isClient) {
+    return null; // Atau tampilkan skeleton loading
+  }
+
+  return isAuthenticated ? <ProfileContent /> : <LoginForm />;
+}
+

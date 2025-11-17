@@ -72,14 +72,16 @@ export default function Header() {
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifikasi</span>
         </Button>
-        <Avatar className="h-9 w-9">
-          <AvatarImage
-            src={userAvatar?.imageUrl}
-            alt="User Avatar"
-            data-ai-hint={userAvatar?.imageHint}
-          />
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
+        <Link href="/profile">
+          <Avatar className="h-9 w-9">
+            <AvatarImage
+              src={userAvatar?.imageUrl}
+              alt="User Avatar"
+              data-ai-hint={userAvatar?.imageHint}
+            />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+        </Link>
       </div>
     </header>
   );
