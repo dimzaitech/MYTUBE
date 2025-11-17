@@ -48,7 +48,8 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder="Password default: admin123"
+                  placeholder="Masukkan password"
+                  autoFocus
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
@@ -160,4 +161,3 @@ export default function ProfilePage() {
 
   return isAuthenticated ? <ProfileContent /> : <LoginForm />;
 }
-
