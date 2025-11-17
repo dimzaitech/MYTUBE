@@ -1,6 +1,7 @@
 'use server';
 
-import { YOUTUBE_API_KEY, YOUTUBE_API_URL } from '@/lib/config';
+import { YOUTUBE_API_URL } from '@/lib/config';
+import apiKeyManager from './apiKeyManager';
 
 // Definisikan tipe untuk data video yang sudah diformat
 export type FormattedVideo = {
@@ -106,26 +107,53 @@ function formatVideos(videos: YouTubeVideoItem[]): FormattedVideo[] {
   }));
 }
 
+// --- Generic Fetch Function ---
+
+async function fetchWithApiKeyRotation<T>(
+  url: string,
+  retryCount = 3
+): Promise<T> {
+  const YOUTUBE_API_KEY = await apiKeyManager.getCurrentKey();
+  if (YOUTUBE_API_KEY === 'YOUR_YOUTUBE_API_KEY_HERE') {
+    console.warn('YouTube API key is not set. Using mock data.');
+    return { items: [] } as unknown as T;
+  }
+
+  try {
+    const fullUrl = `${url}&key=${YOUTUBE_API_KEY}`;
+    const response = await fetch(fullUrl);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw { ...errorData, status: response.status };
+    }
+
+    await apiKeyManager.markRequestSuccess();
+    return await response.json();
+  } catch (error) {
+    console.error('API request failed:', error);
+    await apiKeyManager.handleFailedRequest(error);
+
+    if (retryCount > 0) {
+      console.log(`Retrying request... (${retryCount} attempts left)`);
+      return fetchWithApiKeyRotation(url, retryCount - 1);
+    } else {
+      console.error('API request failed after multiple retries.');
+      throw error;
+    }
+  }
+}
+
 // --- Exported API Functions ---
 
 // Ambil trending videos
-export async function getTrendingVideos(
+async function getTrendingVideos(
   maxResults = 12
 ): Promise<FormattedVideo[]> {
-  if (YOUTUBE_API_KEY === 'YOUR_YOUTUBE_API_KEY_HERE') {
-    console.warn('YouTube API key is not set. Using mock data.');
-    return [];
-  }
   try {
-    const response = await fetch(
-      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}&key=${YOUTUBE_API_KEY}`
+    const data: any = await fetchWithApiKeyRotation(
+      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`
     );
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error fetching trending videos:', errorData);
-      return [];
-    }
-    const data = await response.json();
     return formatVideos(data.items);
   } catch (error) {
     console.error('Error fetching trending videos:', error);
@@ -136,15 +164,9 @@ export async function getTrendingVideos(
 // Ambil detail video berdasarkan ID
 async function getVideoDetails(videoIds: string): Promise<FormattedVideo[]> {
   try {
-    const response = await fetch(
-      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`
+    const data: any = await fetchWithApiKeyRotation(
+      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`
     );
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error fetching video details:', errorData);
-      return [];
-    }
-    const data = await response.json();
     return formatVideos(data.items);
   } catch (error) {
     console.error('Error fetching video details:', error);
@@ -153,24 +175,14 @@ async function getVideoDetails(videoIds: string): Promise<FormattedVideo[]> {
 }
 
 // Search videos
-export async function searchVideos(
+async function searchVideos(
   query: string,
   maxResults = 12
 ): Promise<FormattedVideo[]> {
-  if (YOUTUBE_API_KEY === 'YOUR_YOUTUBE_API_KEY_HERE') {
-    console.warn('YouTube API key is not set. Using mock data.');
-    return [];
-  }
   try {
-    const response = await fetch(
-      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video&key=${YOUTUBE_API_KEY}`
+    const data: any = await fetchWithApiKeyRotation(
+      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video`
     );
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error searching videos:', errorData);
-      return [];
-    }
-    const data = await response.json();
 
     const videoIds = data.items
       .map((item: YouTubeVideoItem) =>
