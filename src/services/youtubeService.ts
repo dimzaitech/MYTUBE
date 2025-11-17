@@ -113,36 +113,39 @@ async function fetchWithApiKeyRotation<T>(
   url: string,
   retryCount = 3
 ): Promise<T> {
-  const YOUTUBE_API_KEY = await apiKeyManager.getCurrentKey();
-  if (YOUTUBE_API_KEY === 'YOUR_YOUTUBE_API_KEY_HERE') {
+  let currentKey = await apiKeyManager.getCurrentKey();
+  if (currentKey === 'YOUR_YOUTUBE_API_KEY_HERE') {
     console.warn('YouTube API key is not set. Using mock data.');
     return { items: [] } as unknown as T;
   }
+  
+  for (let i = 0; i < retryCount; i++) {
+    try {
+      currentKey = await apiKeyManager.getCurrentKey();
+      const fullUrl = `${url}&key=${currentKey}`;
+      const response = await fetch(fullUrl);
 
-  try {
-    const fullUrl = `${url}&key=${YOUTUBE_API_KEY}`;
-    const response = await fetch(fullUrl);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw { ...errorData, status: response.status };
+      }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw { ...errorData, status: response.status };
-    }
-
-    await apiKeyManager.markRequestSuccess();
-    return await response.json();
-  } catch (error) {
-    console.error('API request failed:', error);
-    await apiKeyManager.handleFailedRequest(error);
-
-    if (retryCount > 0) {
-      console.log(`Retrying request... (${retryCount} attempts left)`);
-      return fetchWithApiKeyRotation(url, retryCount - 1);
-    } else {
-      console.error('API request failed after multiple retries.');
-      throw error;
+      await apiKeyManager.markRequestSuccess();
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      try {
+        await apiKeyManager.handleFailedRequest(error);
+        console.log(`Retrying request... (${i + 1}/${retryCount})`);
+      } catch (e) {
+        console.error('All API keys failed. No more keys to switch to.');
+        throw e; // Re-throw the final error
+      }
     }
   }
+  throw new Error(`API request failed after ${retryCount} retries.`);
 }
+
 
 // --- Exported API Functions ---
 
