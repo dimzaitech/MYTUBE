@@ -1,5 +1,5 @@
 'use client';
-import { Search, Youtube, Bell, Upload, Menu } from 'lucide-react';
+import { Search, Youtube, Bell, Upload, Menu, Settings } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,16 +72,12 @@ export default function Header() {
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifikasi</span>
         </Button>
-        <Link href="/profile">
-          <Avatar className="h-9 w-9">
-            <AvatarImage
-              src={userAvatar?.imageUrl}
-              alt="User Avatar"
-              data-ai-hint={userAvatar?.imageHint}
-            />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-        </Link>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/profile">
+            <Settings className="h-5 w-5" />
+            <span className="sr-only">Admin Panel</span>
+          </Link>
+        </Button>
       </div>
     </header>
   );
