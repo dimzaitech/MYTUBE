@@ -1,7 +1,7 @@
 'use client';
 
 // Ganti dengan password yang lebih aman di aplikasi production
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_PASSWORD = 'mysecretpassword123';
 
 export class SimpleAuth {
   static isAuthenticated(): boolean {
