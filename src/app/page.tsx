@@ -13,22 +13,24 @@ import { Search } from 'lucide-react';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 
 const categories = [
-  'All',
-  'Music',
-  'Gaming',
+  'Semua',
+  'Musik',
+  'Karaoke',
+  'Berita',
+  'Hobby',
   'Live',
-  'Mixes',
-  'Comedy',
-  'Trailers',
-  'Recently uploaded',
-  'Watched',
-  'New to you',
+  'Kuliner',
+  'Film',
+  'Horor',
+  'Kartun',
+  'Travelling',
+  'Komedi',
 ];
 
 export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCategory, setActiveCategory] = useState('Semua');
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
@@ -56,6 +58,7 @@ export default function Home() {
           // In a real app, you'd fetch videos based on the activeCategory
           // For this demo, we'll just fetch trending videos for 'All' or default
           fetchedVideos = await getTrendingVideos(12);
+          setActiveCategory('Semua');
         }
         setVideos(fetchedVideos);
       } catch (error) {
@@ -100,7 +103,7 @@ export default function Home() {
                 key={category}
                 variant={activeCategory === category ? 'default' : 'secondary'}
                 size="sm"
-                className="h-8 shrink-0 rounded-full"
+                className="h-8 shrink-0 rounded-full px-3 py-1.5 md:px-4 md:py-2"
                 onClick={() => {
                   // On category click, we remove search query and set category
                   setActiveCategory(category);
