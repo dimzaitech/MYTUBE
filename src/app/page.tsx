@@ -1,35 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import VideoGrid from '@/components/videos/video-grid';
 import {
   getTrendingVideos,
   searchVideos,
   type FormattedVideo,
 } from '@/services/youtubeService';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import ApiStatus from '@/components/features/ApiStatus';
-import ClientOnly from '@/components/ClientOnly';
-
-function VideoSkeleton() {
-  return (
-    <div className="flex flex-col gap-3">
-      <Skeleton className="relative aspect-video w-full overflow-hidden rounded-xl" />
-      <div className="flex gap-3">
-        <Skeleton className="h-9 w-9 rounded-full" />
-        <div className="flex flex-col flex-1 gap-2">
-          <Skeleton className="h-4 w-4/5" />
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-4 w-1/2" />
-        </div>
-      </div>
-    </div>
-  );
-}
+import ApiStatusDynamic from '@/components/features/ApiStatusDynamic';
+import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 
 export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
@@ -95,35 +77,10 @@ export default function Home() {
       </div>
 
       <div className="mb-4">
-        <ApiStatus />
+        <ApiStatusDynamic />
       </div>
 
-      <ClientOnly
-        fallback={
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(12)].map((_, i) => (
-              <VideoSkeleton key={i} />
-            ))}
-          </div>
-        }
-      >
-        {loading ? (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(12)].map((_, i) => (
-              <VideoSkeleton key={i} />
-            ))}
-          </div>
-        ) : videos && videos.length > 0 ? (
-          <VideoGrid videos={videos} />
-        ) : (
-          <div className="flex h-64 items-center justify-center">
-            <p>
-              Video tidak ditemukan. Kunci API YouTube mungkin hilang, tidak
-              valid, atau kuotanya habis.
-            </p>
-          </div>
-        )}
-      </ClientOnly>
+      <VideoGridDynamic loading={loading} videos={videos} />
     </>
   );
 }

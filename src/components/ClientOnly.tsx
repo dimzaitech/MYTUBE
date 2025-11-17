@@ -3,7 +3,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 
 interface ClientOnlyProps {
-  children: ReactNode;
+  children: React.ReactNode;
   fallback?: ReactNode;
 }
 
@@ -17,5 +17,9 @@ export default function ClientOnly({
     setIsClient(true);
   }, []);
 
-  return isClient ? <>{children}</> : <>{fallback}</>;
+  if (!isClient) {
+    return <>{fallback}</>;
+  }
+
+  return <>{children}</>;
 }
