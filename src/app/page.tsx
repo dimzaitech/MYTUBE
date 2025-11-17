@@ -62,7 +62,11 @@ export default function Home() {
       setLoading(false);
     };
 
-    fetchVideos();
+    // We need to check for `window` to ensure this only runs on the client
+    // where apiKeyManager is initialized.
+    if (typeof window !== 'undefined') {
+        fetchVideos();
+    }
   }, [searchQuery]);
 
   return (

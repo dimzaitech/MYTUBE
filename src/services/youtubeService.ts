@@ -1,13 +1,8 @@
-'use server';
+'use client';
 
 import { YOUTUBE_API_URL } from '@/lib/config';
-import {
-  getCurrentKey,
-  handleFailedRequest,
-  markRequestSuccess,
-} from './apiKeyManager';
+import apiKeyManager from './apiKeyManager';
 
-// Definisikan tipe untuk data video yang sudah diformat
 export type FormattedVideo = {
   id: string;
   title: string;
@@ -19,7 +14,6 @@ export type FormattedVideo = {
   channelAvatarUrl: string;
 };
 
-// Definisikan tipe untuk item dari YouTube API
 type YouTubeVideoItem = {
   id: string | { videoId: string };
   snippet: {
@@ -41,62 +35,43 @@ type YouTubeVideoItem = {
   };
 };
 
-// --- Helper Functions ---
-
-// Format number views
 function formatViews(views: string): string {
   const num = parseInt(views, 10);
-  if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(1) + 'M';
-  }
-  if (num >= 1_000) {
-    return (num / 1_000).toFixed(0) + 'K';
-  }
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(0) + 'K';
   return views;
 }
 
-// Format waktu upload
 function formatTimeAgo(publishedAt: string): string {
   const date = new Date(publishedAt);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + ' years ago';
-
   interval = seconds / 2592000;
   if (interval > 1) return Math.floor(interval) + ' months ago';
-
   interval = seconds / 86400;
   if (interval > 1) return Math.floor(interval) + ' days ago';
-
   interval = seconds / 3600;
   if (interval > 1) return Math.floor(interval) + ' hours ago';
-
   interval = seconds / 60;
   if (interval > 1) return Math.floor(interval) + ' minutes ago';
-
   return Math.floor(seconds) + ' seconds ago';
 }
 
-// Format duration video
 function formatDuration(duration?: string): string {
   if (!duration) return '0:00';
-
   const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
   if (!match) return '0:00';
-
   const hours = parseInt(match[1]?.slice(0, -1) || '0', 10);
   const minutes = parseInt(match[2]?.slice(0, -1) || '0', 10);
   const seconds = parseInt(match[3]?.slice(0, -1) || '0', 10);
-
   if (hours > 0) {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
-// Format data video ke struktur yang kita butuhkan
 function formatVideos(videos: YouTubeVideoItem[]): FormattedVideo[] {
   if (!videos) return [];
   return videos.map((video) => ({
@@ -107,25 +82,22 @@ function formatVideos(videos: YouTubeVideoItem[]): FormattedVideo[] {
     uploadedAt: formatTimeAgo(video.snippet.publishedAt),
     duration: formatDuration(video.contentDetails?.duration),
     thumbnailUrl: video.snippet.thumbnails.high.url,
-    channelAvatarUrl: '', // Placeholder, will be fetched separately
+    channelAvatarUrl: '',
   }));
 }
 
-// --- Generic Fetch Function ---
+async function fetchWithApiKeyRotation<T>(url: string): Promise<T> {
+  const maxRetries = apiKeyManager.requestCounts ? Object.keys(apiKeyManager.requestCounts).length : 1;
+  let attempt = 0;
 
-async function fetchWithApiKeyRotation<T>(
-  url: string,
-  retryCount = 3
-): Promise<T> {
-  let currentKey = await getCurrentKey();
-  if (currentKey === 'YOUR_YOUTUBE_API_KEY_HERE') {
-    console.warn('YouTube API key is not set. Using mock data.');
-    return { items: [] } as unknown as T;
-  }
-
-  for (let i = 0; i < retryCount; i++) {
+  while (attempt < maxRetries) {
     try {
-      currentKey = await getCurrentKey();
+      const currentKey = apiKeyManager.getCurrentKey();
+      if (currentKey === 'YOUR_YOUTUBE_API_KEY_HERE') {
+        console.warn('YouTube API key is not set.');
+        return { items: [] } as unknown as T;
+      }
+
       const fullUrl = `${url}&key=${currentKey}`;
       const response = await fetch(fullUrl);
 
@@ -134,28 +106,24 @@ async function fetchWithApiKeyRotation<T>(
         throw { ...errorData, status: response.status };
       }
 
-      await markRequestSuccess();
+      apiKeyManager.markRequestSuccess();
       return await response.json();
     } catch (error) {
       console.error('API request failed:', error);
+      attempt++;
       try {
-        await handleFailedRequest(error);
-        console.log(`Retrying request... (${i + 1}/${retryCount})`);
+        apiKeyManager.handleFailedRequest(error);
+        console.log(`Retrying request... (${attempt}/${maxRetries})`);
       } catch (e) {
         console.error('All API keys failed. No more keys to switch to.');
-        throw e; // Re-throw the final error
+        throw e;
       }
     }
   }
-  throw new Error(`API request failed after ${retryCount} retries.`);
+  throw new Error(`API request failed after ${maxRetries} retries.`);
 }
 
-// --- Exported API Functions ---
-
-// Ambil trending videos
-export async function getTrendingVideos(
-  maxResults = 12
-): Promise<FormattedVideo[]> {
+export async function getTrendingVideos(maxResults = 12): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`
@@ -167,7 +135,6 @@ export async function getTrendingVideos(
   }
 }
 
-// Ambil detail video berdasarkan ID
 async function getVideoDetails(videoIds: string): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
@@ -180,24 +147,15 @@ async function getVideoDetails(videoIds: string): Promise<FormattedVideo[]> {
   }
 }
 
-// Search videos
-export async function searchVideos(
-  query: string,
-  maxResults = 12
-): Promise<FormattedVideo[]> {
+export async function searchVideos(query: string, maxResults = 12): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video`
     );
-
     const videoIds = data.items
-      .map((item: YouTubeVideoItem) =>
-        typeof item.id === 'object' ? item.id.videoId : item.id
-      )
+      .map((item: YouTubeVideoItem) => (typeof item.id === 'object' ? item.id.videoId : item.id))
       .join(',');
-
     if (!videoIds) return [];
-
     return getVideoDetails(videoIds);
   } catch (error) {
     console.error('Error searching videos:', error);
