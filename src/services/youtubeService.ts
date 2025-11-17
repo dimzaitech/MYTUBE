@@ -1,7 +1,11 @@
 'use server';
 
 import { YOUTUBE_API_URL } from '@/lib/config';
-import apiKeyManager from './apiKeyManager';
+import {
+  getCurrentKey,
+  handleFailedRequest,
+  markRequestSuccess,
+} from './apiKeyManager';
 
 // Definisikan tipe untuk data video yang sudah diformat
 export type FormattedVideo = {
@@ -113,15 +117,15 @@ async function fetchWithApiKeyRotation<T>(
   url: string,
   retryCount = 3
 ): Promise<T> {
-  let currentKey = await apiKeyManager.getCurrentKey();
+  let currentKey = await getCurrentKey();
   if (currentKey === 'YOUR_YOUTUBE_API_KEY_HERE') {
     console.warn('YouTube API key is not set. Using mock data.');
     return { items: [] } as unknown as T;
   }
-  
+
   for (let i = 0; i < retryCount; i++) {
     try {
-      currentKey = await apiKeyManager.getCurrentKey();
+      currentKey = await getCurrentKey();
       const fullUrl = `${url}&key=${currentKey}`;
       const response = await fetch(fullUrl);
 
@@ -130,12 +134,12 @@ async function fetchWithApiKeyRotation<T>(
         throw { ...errorData, status: response.status };
       }
 
-      await apiKeyManager.markRequestSuccess();
+      await markRequestSuccess();
       return await response.json();
     } catch (error) {
       console.error('API request failed:', error);
       try {
-        await apiKeyManager.handleFailedRequest(error);
+        await handleFailedRequest(error);
         console.log(`Retrying request... (${i + 1}/${retryCount})`);
       } catch (e) {
         console.error('All API keys failed. No more keys to switch to.');
@@ -146,13 +150,10 @@ async function fetchWithApiKeyRotation<T>(
   throw new Error(`API request failed after ${retryCount} retries.`);
 }
 
-
 // --- Exported API Functions ---
 
 // Ambil trending videos
-async function getTrendingVideos(
-  maxResults = 12
-): Promise<FormattedVideo[]> {
+async function getTrendingVideos(maxResults = 12): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}`

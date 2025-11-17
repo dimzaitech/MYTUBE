@@ -15,13 +15,15 @@ class ApiKeyManager {
       process.env.VITE_YOUTUBE_API_KEY_4,
       process.env.VITE_YOUTUBE_API_KEY_5,
     ]
-      .filter((key): key is string => !!key && key !== 'YOUR_YOUTUBE_API_KEY_HERE')
+      .filter(
+        (key): key is string => !!key && key !== 'YOUR_YOUTUBE_API_KEY_HERE'
+      )
       .filter(Boolean);
 
     this.currentKeyIndex = 0;
     this.failedKeys = new Set();
     this.requestCounts = {};
-    
+
     this.apiKeys.forEach((_, index) => {
       this.requestCounts[index] = 0;
     });
@@ -64,8 +66,10 @@ class ApiKeyManager {
 
   public markKeyFailed(keyIndex: number): void {
     if (!this.failedKeys.has(keyIndex)) {
-        this.failedKeys.add(keyIndex);
-        console.warn(`API Key ${keyIndex + 1} marked as failed or quota exceeded.`);
+      this.failedKeys.add(keyIndex);
+      console.warn(
+        `API Key ${keyIndex + 1} marked as failed or quota exceeded.`
+      );
     }
   }
 
@@ -74,9 +78,14 @@ class ApiKeyManager {
 
     this.requestCounts[this.currentKeyIndex]++;
 
-    if (this.requestCounts[this.currentKeyIndex] >= this.maxRequestsPerKey * 0.9) {
+    if (
+      this.requestCounts[this.currentKeyIndex] >=
+      this.maxRequestsPerKey * 0.9
+    ) {
       console.log(
-        `API Key ${this.currentKeyIndex + 1} approaching limit, switching...`
+        `API Key ${
+          this.currentKeyIndex + 1
+        } approaching limit, switching...`
       );
       try {
         this.getNextKey();
@@ -87,7 +96,7 @@ class ApiKeyManager {
   }
 
   public handleFailedRequest(error: any): void {
-     if (this.apiKeys.length === 0) return;
+    if (this.apiKeys.length === 0) return;
 
     const currentIndex = this.currentKeyIndex;
     const isQuotaError =
@@ -107,14 +116,33 @@ class ApiKeyManager {
       throw new Error('All API keys are currently unavailable.');
     }
   }
+
+  public getStatus() {
+    return {
+      currentKeyIndex: this.currentKeyIndex,
+      totalKeys: this.apiKeys.length,
+      activeKeys: this.apiKeys.length - this.failedKeys.size,
+      requestCounts: this.requestCounts,
+      failedKeys: Array.from(this.failedKeys),
+      apiKeys: this.apiKeys,
+    };
+  }
 }
 
 const apiKeyManagerInstance = new ApiKeyManager();
 
-const apiKeyManager = {
-    getCurrentKey: async () => apiKeyManagerInstance.getCurrentKey(),
-    markRequestSuccess: async () => apiKeyManagerInstance.markRequestSuccess(),
-    handleFailedRequest: async (error: any) => apiKeyManagerInstance.handleFailedRequest(error),
-};
+export async function getCurrentKey(): Promise<string> {
+  return apiKeyManagerInstance.getCurrentKey();
+}
 
-export default apiKeyManager;
+export async function markRequestSuccess(): Promise<void> {
+  apiKeyManagerInstance.markRequestSuccess();
+}
+
+export async function handleFailedRequest(error: any): Promise<void> {
+  apiKeyManagerInstance.handleFailedRequest(error);
+}
+
+export async function getStatus(): Promise<string> {
+  return JSON.stringify(apiKeyManagerInstance.getStatus());
+}
