@@ -71,12 +71,11 @@ class BackgroundPlayService {
     });
   }
 
-  async setupBackgroundPlay(videoElement: HTMLVideoElement, videoInfo: any, videoList: any[] = [], currentIndex: number = 0, onNextCallback: ((index: number) => void) | null = null) {
-    if (!this.isBackgroundSupported) return;
-
-    console.warn(
-      'Attempting to set up BackgroundPlayService. Note: This will not work with a YouTube iframe due to security restrictions.'
-    );
+  async setupBackgroundPlay(videoElement: HTMLVideoElement | null, videoInfo: any, videoList: any[] = [], currentIndex: number = 0, onNextCallback: ((index: number) => void) | null = null) {
+    if (!this.isBackgroundSupported || !videoElement) {
+        console.warn('Background play is not supported or video element is missing.');
+        return;
+    }
 
     this.videoElement = videoElement;
     this.videoList = videoList;
@@ -84,8 +83,11 @@ class BackgroundPlayService {
     this.onNextVideo = onNextCallback;
 
     this.setupMediaSession(videoInfo);
+    
     this.setupServiceWorker();
+    
     await this.requestWakeLock();
+    
     this.setupVideoListeners();
   }
 
@@ -254,32 +256,16 @@ class BackgroundPlayService {
   }
 
   playNextVideo() {
-    if (this.videoList && this.onNextVideo) {
-      const nextIndex = this.currentVideoIndex + 1;
-      if (nextIndex < this.videoList.length) {
-        this.currentVideoIndex = nextIndex;
+    if (this.onNextVideo && this.videoList) {
+        const nextIndex = (this.currentVideoIndex + 1) % this.videoList.length;
         this.onNextVideo(nextIndex);
-
-        const nextVideo = this.videoList[nextIndex];
-        if (nextVideo && 'mediaSession' in navigator) {
-          this.updateMediaSession(nextVideo);
-        }
-      }
     }
   }
 
   playPreviousVideo() {
-    if (this.videoList && this.onNextVideo) {
-      const prevIndex = Math.max(0, this.currentVideoIndex - 1);
-      if (prevIndex !== this.currentVideoIndex) {
-        this.currentVideoIndex = prevIndex;
+    if (this.onNextVideo && this.videoList) {
+        const prevIndex = (this.currentVideoIndex - 1 + this.videoList.length) % this.videoList.length;
         this.onNextVideo(prevIndex);
-
-        const prevVideo = this.videoList[prevIndex];
-        if (prevVideo && 'mediaSession' in navigator) {
-          this.updateMediaSession(prevVideo);
-        }
-      }
     }
   }
   
