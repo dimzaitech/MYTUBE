@@ -28,11 +28,13 @@ const VideoGrid = dynamic(() => import('./video-grid'), {
 interface VideoGridDynamicProps {
   loading: boolean;
   videos: FormattedVideo[];
+  onVideoClick: (video: FormattedVideo) => void;
 }
 
 export default function VideoGridDynamic({
   loading,
   videos,
+  onVideoClick,
 }: VideoGridDynamicProps) {
   if (loading) {
     return (
@@ -45,7 +47,7 @@ export default function VideoGridDynamic({
   }
 
   if (videos && videos.length > 0) {
-    return <VideoGrid videos={videos} />;
+    return <VideoGrid videos={videos} onVideoClick={onVideoClick} />;
   }
 
   return (

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
+import VideoPlayer from '@/components/videos/VideoPlayer';
 
 const categories = [
   'Semua',
@@ -45,6 +46,11 @@ export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Semua');
+  const [selectedVideo, setSelectedVideo] = useState<FormattedVideo | null>(
+    null
+  );
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
@@ -61,9 +67,20 @@ export default function Home() {
   };
 
   const handleCategorySelect = (category: string) => {
-    // Clear search query from URL when a category is clicked
     router.push('/', { scroll: false });
     setActiveCategory(category);
+  };
+
+  const handleVideoClick = (video: FormattedVideo) => {
+    setSelectedVideo(video);
+    setIsPlayerOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleClosePlayer = () => {
+    setIsPlayerOpen(false);
+    setSelectedVideo(null);
+    document.body.style.overflow = 'unset';
   };
 
   useEffect(() => {
@@ -71,29 +88,23 @@ export default function Home() {
       setLoading(true);
       try {
         let fetchedVideos: FormattedVideo[] = [];
-        // Priority 1: Direct search query from URL
         if (searchQuery) {
-          setActiveCategory(''); // Reset category when searching
+          setActiveCategory('');
           fetchedVideos = await searchVideos(searchQuery, 24);
-        }
-        // Priority 2: Active category is 'Semua' (All)
-        else if (activeCategory === 'Semua') {
+        } else if (activeCategory === 'Semua') {
           fetchedVideos = await getTrendingVideos(24);
-        }
-        // Priority 3: Active category is anything else
-        else {
+        } else {
           const query = categoryQueries[activeCategory];
           if (query) {
             fetchedVideos = await searchVideos(query, 24);
           } else {
-            // Fallback to trending if category query is not found
             fetchedVideos = await getTrendingVideos(24);
           }
         }
         setVideos(fetchedVideos);
       } catch (error) {
         console.error('Failed to fetch videos:', error);
-        setVideos([]); // Clear videos on error
+        setVideos([]);
       } finally {
         setLoading(false);
       }
@@ -104,6 +115,11 @@ export default function Home() {
 
   return (
     <>
+      <VideoPlayer
+        video={selectedVideo}
+        isOpen={isPlayerOpen}
+        onClose={handleClosePlayer}
+      />
       <div className="mb-6 block md:hidden">
         <form onSubmit={handleSearch} className="w-full">
           <div className="relative">
@@ -144,18 +160,21 @@ export default function Home() {
       </div>
 
       {activeCategory !== 'Semua' && !searchQuery && (
-         <div className="mb-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:mb-6 md:p-4">
-            <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
-                Kategori: {activeCategory}
-            </h2>
-            <p className="text-sm text-blue-300">
-                Menampilkan video yang relevan dengan {activeCategory.toLowerCase()}
-            </p>
-         </div>
+        <div className="mb-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:mb-6 md:p-4">
+          <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
+            Kategori: {activeCategory}
+          </h2>
+          <p className="text-sm text-blue-300">
+            Menampilkan video yang relevan dengan {activeCategory.toLowerCase()}
+          </p>
+        </div>
       )}
 
-
-      <VideoGridDynamic loading={loading} videos={videos} />
+      <VideoGridDynamic
+        loading={loading}
+        videos={videos}
+        onVideoClick={handleVideoClick}
+      />
     </>
   );
 }

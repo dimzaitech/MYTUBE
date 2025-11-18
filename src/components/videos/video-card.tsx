@@ -1,14 +1,21 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { FormattedVideo } from '@/services/youtubeService';
 
-export default function VideoCard({ video }: { video: FormattedVideo }) {
+interface VideoCardProps {
+  video: FormattedVideo;
+  onVideoClick: (video: FormattedVideo) => void;
+}
+
+export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
   return (
-    <Link href="#" className="group block">
+    <div
+      className="group block cursor-pointer"
+      onClick={() => onVideoClick(video)}
+    >
       <div className="flex flex-col gap-2 md:gap-3">
         <div className="relative w-full overflow-hidden rounded-lg md:rounded-xl">
-           <Image
+          <Image
             src={video.thumbnailUrl}
             alt={video.title}
             width={320}
@@ -42,6 +49,6 @@ export default function VideoCard({ video }: { video: FormattedVideo }) {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
