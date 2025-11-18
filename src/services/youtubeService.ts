@@ -169,7 +169,7 @@ async function processVideos(
 }
 
 export async function getTrendingVideos(
-  maxResults = 12
+  maxResults = 24
 ): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
@@ -196,7 +196,7 @@ async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
 
 export async function searchVideos(
   query: string,
-  maxResults = 12
+  maxResults = 24
 ): Promise<FormattedVideo[]> {
   try {
     const searchData: any = await fetchWithApiKeyRotation(
@@ -231,4 +231,8 @@ export async function searchVideos(
     console.error('Error searching videos:', error);
     return [];
   }
+}
+
+export function getVideoEmbedUrl(videoId: string): string {
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
 }

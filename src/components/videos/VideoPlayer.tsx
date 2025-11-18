@@ -8,7 +8,10 @@ import {
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import type { FormattedVideo } from '@/services/youtubeService';
+import {
+  getVideoEmbedUrl,
+  type FormattedVideo,
+} from '@/services/youtubeService';
 
 interface VideoPlayerProps {
   video: FormattedVideo | null;
@@ -25,7 +28,7 @@ export default function VideoPlayer({
     return null;
   }
 
-  const videoSrc = `https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0`;
+  const videoSrc = getVideoEmbedUrl(video.id);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
