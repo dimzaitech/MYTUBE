@@ -55,7 +55,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
-  const { playNextInQueue, playFromQueue, videoToPlay, clearVideoToPlay } = useQueue();
+  const { playNextInQueue, videoToPlay, clearVideoToPlay } = useQueue();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
