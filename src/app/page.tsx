@@ -142,14 +142,14 @@ export default function Home() {
       </div>
 
       <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-4 border-b bg-background/80 p-4 backdrop-blur-sm sm:-mx-6 sm:-mt-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <div className="flex items-center gap-2">
             {categories.map((category) => (
               <Button
                 key={category}
                 variant={activeCategory === category ? 'default' : 'secondary'}
                 size="sm"
-                className="h-8 shrink-0 rounded-full px-3 py-1.5 transition-colors md:px-4 md:py-2"
+                className="h-9 shrink-0 rounded-full px-4 py-2 text-sm transition-colors md:h-8 md:px-3 md:py-1.5 md:text-sm"
                 onClick={() => handleCategorySelect(category)}
               >
                 {category}
