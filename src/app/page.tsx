@@ -55,7 +55,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
-  const { playNextInQueue, playFromQueue, queue } = useQueue();
+  const { playNextInQueue, playFromQueue, videoToPlay, clearVideoToPlay } = useQueue();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,16 +90,13 @@ export default function Home() {
       document.body.classList.remove('no-scroll');
     }
   };
-  
-  useEffect(() => {
-    // Logic to start playing directly from queue
-    if (queue.length > 0 && !isPlayerOpen) {
-       const videoToPlay = queue[0];
-       playFromQueue(videoToPlay); // This will adjust the queue
-       handleVideoClick(videoToPlay);
-    }
-  }, [queue, isPlayerOpen]);
 
+  useEffect(() => {
+    if (videoToPlay) {
+      handleVideoClick(videoToPlay);
+      clearVideoToPlay();
+    }
+  }, [videoToPlay]);
 
   useEffect(() => {
     const fetchVideos = async () => {

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { type FormattedVideo } from '@/services/youtubeService';
 
 interface QueueContextType {
   queue: FormattedVideo[];
   isQueueOpen: boolean;
+  videoToPlay: FormattedVideo | null;
   addToQueue: (video: FormattedVideo) => void;
   removeFromQueue: (videoId: string) => void;
   playNextInQueue: () => FormattedVideo | null;
@@ -13,6 +14,7 @@ interface QueueContextType {
   setQueueOpen: (isOpen: boolean) => void;
   clearQueue: () => void;
   playFromQueue: (video: FormattedVideo) => void;
+  clearVideoToPlay: () => void;
 }
 
 const QueueContext = createContext<QueueContextType | undefined>(undefined);
@@ -20,11 +22,13 @@ const QueueContext = createContext<QueueContextType | undefined>(undefined);
 export const QueueProvider = ({ children }: { children: ReactNode }) => {
   const [queue, setQueue] = useState<FormattedVideo[]>([]);
   const [isQueueOpen, setQueueOpen] = useState(false);
+  const [videoToPlay, setVideoToPlay] = useState<FormattedVideo | null>(null);
+
 
   const addToQueue = (video: FormattedVideo) => {
     setQueue((prevQueue) => {
       if (prevQueue.find((v) => v.id === video.id)) {
-        return prevQueue; // Hindari duplikat
+        return prevQueue;
       }
       return [...prevQueue, video];
     });
@@ -41,16 +45,17 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
     return nextVideo;
   };
   
-  const playFromQueue = (video: FormattedVideo) => {
-    setQueue((prevQueue) => {
-      const videoIndex = prevQueue.findIndex(v => v.id === video.id);
-      if (videoIndex > -1) {
-        return prevQueue.slice(videoIndex);
-      }
-      return prevQueue;
-    });
-  };
-
+  const playFromQueue = useCallback((video: FormattedVideo) => {
+    const videoIndex = queue.findIndex(v => v.id === video.id);
+    if (videoIndex > -1) {
+      setVideoToPlay(video);
+      setQueue(prevQueue => prevQueue.slice(videoIndex));
+    }
+  }, [queue]);
+  
+  const clearVideoToPlay = useCallback(() => {
+    setVideoToPlay(null);
+  }, []);
 
   const toggleQueue = () => {
     setQueueOpen((prev) => !prev);
@@ -65,13 +70,15 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
       value={{
         queue,
         isQueueOpen,
+        videoToPlay,
         addToQueue,
         removeFromQueue,
         playNextInQueue,
         toggleQueue,
         setQueueOpen,
         clearQueue,
-        playFromQueue
+        playFromQueue,
+        clearVideoToPlay,
       }}
     >
       {children}
