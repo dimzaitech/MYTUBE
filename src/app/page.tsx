@@ -164,7 +164,7 @@ export default function Home() {
                 key={category}
                 variant={activeCategory === category ? 'default' : 'secondary'}
                 size="sm"
-                className="h-9 shrink-0 rounded-full px-4 py-2 text-sm transition-colors md:h-8 md:px-3 md:py-1.5 md:text-sm"
+                className="h-9 shrink-0 rounded-full px-4 py-2 text-base transition-colors md:h-8 md:px-3 md:py-1.5 md:text-sm"
                 onClick={() => handleCategorySelect(category)}
               >
                 {category}
