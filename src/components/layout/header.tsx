@@ -1,15 +1,13 @@
 'use client';
-import { Search, Youtube, Bell, Upload, Menu, Settings } from 'lucide-react';
+import { Search, Youtube, Bell, Upload, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useSidebar } from '../ui/sidebar';
 
 export default function Header() {
   const router = useRouter();
-  const { toggleSidebar } = useSidebar();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,15 +23,6 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={toggleSidebar}
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle Menu</span>
-        </Button>
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <Youtube className="h-7 w-7 text-primary" />
           <span className="text-lg">MyTUBE</span>
