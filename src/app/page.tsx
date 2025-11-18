@@ -74,13 +74,13 @@ export default function Home() {
   const handleVideoClick = (video: FormattedVideo) => {
     setSelectedVideo(video);
     setIsPlayerOpen(true);
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('no-scroll');
   };
 
   const handleClosePlayer = () => {
     setIsPlayerOpen(false);
     setSelectedVideo(null);
-    document.body.style.overflow = 'unset';
+    document.body.classList.remove('no-scroll');
   };
 
   useEffect(() => {
