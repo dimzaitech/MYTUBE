@@ -71,7 +71,10 @@ export default function Home() {
   };
 
   const handleCategorySelect = (category: string) => {
-    router.push('/', { scroll: false });
+    // Jika ada search query, hapus search query saat mengganti kategori
+    if (searchQuery) {
+      router.push('/');
+    }
     setActiveCategory(category);
   };
 
@@ -130,8 +133,11 @@ export default function Home() {
       try {
         let fetchedVideos: FormattedVideo[] = [];
         if (searchQuery) {
-          setActiveCategory('');
-          fetchedVideos = await searchVideos(searchQuery, 24);
+          // Jika ada query pencarian, gabungkan dengan kategori
+          const categoryQuery =
+            activeCategory !== 'Semua' ? categoryQueries[activeCategory] : '';
+          const finalQuery = `${searchQuery} ${categoryQuery}`.trim();
+          fetchedVideos = await searchVideos(finalQuery, 24);
         } else if (activeCategory === 'Semua') {
           fetchedVideos = await getTrendingVideos(24);
         } else {
@@ -213,6 +219,19 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {searchQuery && (
+        <div className="my-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:my-6 md:p-4">
+          <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
+            Hasil pencarian untuk: "{searchQuery}"
+          </h2>
+          <p className="text-sm text-blue-300">
+            {activeCategory !== 'Semua'
+              ? `Dalam kategori: ${activeCategory}`
+              : 'Di semua kategori'}
+          </p>
+        </div>
+      )}
 
       {activeCategory !== 'Semua' && !searchQuery && (
         <div className="my-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:my-6 md:p-4">
