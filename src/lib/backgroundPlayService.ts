@@ -1,52 +1,364 @@
 'use client';
 
-/**
- * NOTE: This service is a placeholder and is NOT functional with the current
- * YouTube <iframe> implementation.
- *
- * The code below outlines a sophisticated approach for background audio playback
- * using the MediaSession API, Service Workers, and other modern browser features.
- * However, this entire approach relies on having direct programmatic access
- * to a <video> element.
- *
- * Due to the browser's Same-Origin Policy, we cannot access the <video> tag
- * inside a cross-origin <iframe> (like the one from youtube.com). Therefore,
- * we cannot hook up its playback state to the MediaSession API or use tricks
- * like AudioContext to keep it alive in the background.
- *
- * The good news is that modern mobile browsers and the YouTube player itself
- * often handle background playback and media controls automatically, especially
-_for users with YouTube Premium.
- *
- * This file is kept as a reference for a possible future implementation if the
- * app ever uses a direct video source instead of a YouTube embed.
- */
+// Type declarations to make JS code compatible with TypeScript
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+  interface Navigator {
+    wakeLock: any;
+  }
+  class MediaMetadata {
+    constructor(metadata: any);
+    title: string;
+    artist: string;
+    album: string;
+    artwork: { src: string; sizes: string; type: string }[];
+  }
+}
+
 
 class BackgroundPlayService {
+  audioContext: AudioContext | null = null;
+  videoElement: HTMLVideoElement | null = null;
+  mediaSource: any = null; // Adjust type as needed
+  isPlaying: boolean = false;
+  isBackgroundSupported: boolean = false;
+  currentVideoIndex: number = 0;
+  videoList: any[] = [];
+  onNextVideo: ((index: number) => void) | null = null;
+  autoPlayNext: boolean = true;
+  wakeLock: any | null = null;
+
   constructor() {
-    console.log(
-      'BackgroundPlayService initialized (Note: Inactive due to YouTube <iframe> limitations).'
-    );
-  }
-
-  isSupported(): boolean {
-    if (typeof window !== 'undefined') {
-      return (
-        'mediaSession' in navigator &&
-        'serviceWorker' in navigator
-      );
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+        this.checkBackgroundSupport();
+        this.setupEventListeners();
     }
-    return false;
   }
 
-  setup(videoElement: HTMLVideoElement, videoInfo: any) {
+  checkBackgroundSupport() {
+    this.isBackgroundSupported =
+      'serviceWorker' in navigator &&
+      'mediaSession' in navigator &&
+      'wakeLock' in navigator;
+
+    console.log('Background play supported:', this.isBackgroundSupported);
+    return this.isBackgroundSupported;
+  }
+
+  setupEventListeners() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.isPlaying) {
+        this.enterBackgroundMode();
+      } else {
+        this.exitBackgroundMode();
+      }
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (this.isPlaying) {
+        this.enterBackgroundMode();
+      }
+    });
+
+    window.addEventListener('pageshow', () => {
+      this.exitBackgroundMode();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      this.cleanup();
+    });
+  }
+
+  async setupBackgroundPlay(videoElement: HTMLVideoElement, videoInfo: any, videoList: any[] = [], currentIndex: number = 0, onNextCallback: ((index: number) => void) | null = null) {
+    if (!this.isBackgroundSupported) return;
+
     console.warn(
-      'Cannot setup BackgroundPlayService: Direct access to the <video> element inside the YouTube iframe is not possible.'
+      'Attempting to set up BackgroundPlayService. Note: This will not work with a YouTube iframe due to security restrictions.'
     );
+
+    this.videoElement = videoElement;
+    this.videoList = videoList;
+    this.currentVideoIndex = currentIndex;
+    this.onNextVideo = onNextCallback;
+
+    this.setupMediaSession(videoInfo);
+    this.setupServiceWorker();
+    await this.requestWakeLock();
+    this.setupVideoListeners();
+  }
+
+  setupMediaSession(videoInfo: any) {
+    if (!('mediaSession' in navigator)) return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: videoInfo.title,
+      artist: videoInfo.channel,
+      album: 'MyTUBE',
+      artwork: [
+        { src: videoInfo.thumbnail, sizes: '96x96', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '128x128', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '192x192', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '256x256', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '384x384', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '512x512', type: 'image/jpeg' }
+      ]
+    });
+
+    navigator.mediaSession.setActionHandler('play', () => {
+      this.videoElement?.play();
+      this.isPlaying = true;
+      this.updatePlaybackState('playing');
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      this.videoElement?.pause();
+      this.isPlaying = false;
+      this.updatePlaybackState('paused');
+    });
+
+    navigator.mediaSession.setActionHandler('seekbackward', (details: any) => {
+      if (!this.videoElement) return;
+      const skipTime = details.seekOffset || 10;
+      this.videoElement.currentTime = Math.max(this.videoElement.currentTime - skipTime, 0);
+    });
+
+    navigator.mediaSession.setActionHandler('seekforward', (details: any) => {
+      if (!this.videoElement) return;
+      const skipTime = details.seekOffset || 10;
+      this.videoElement.currentTime = Math.min(
+        this.videoElement.currentTime + skipTime,
+        this.videoElement.duration
+      );
+    });
+
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      this.playPreviousVideo();
+    });
+
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      this.playNextVideo();
+    });
+
+    this.updatePlaybackState('playing');
+  }
+
+  setupVideoListeners() {
+    if (!this.videoElement) return;
+
+    this.videoElement.addEventListener('ended', () => {
+      this.handleVideoEnd();
+    });
+
+    this.videoElement.addEventListener('play', () => {
+      this.isPlaying = true;
+      this.updatePlaybackState('playing');
+      this.requestWakeLock();
+    });
+
+    this.videoElement.addEventListener('pause', () => {
+      this.isPlaying = false;
+      this.updatePlaybackState('paused');
+      this.releaseWakeLock();
+    });
+  }
+
+  async setupServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('Service Worker registered:', registration);
+      } catch (error) {
+        console.log('Service Worker registration failed:', error);
+      }
+    }
+  }
+
+  async requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        this.wakeLock = await navigator.wakeLock.request('screen');
+        console.log('Wake Lock acquired');
+
+        this.wakeLock.addEventListener('release', () => {
+          console.log('Wake Lock released');
+        });
+      } catch (err) {
+        console.log('Wake Lock failed:', err);
+      }
+    }
+  }
+
+  async releaseWakeLock() {
+    if (this.wakeLock) {
+      await this.wakeLock.release();
+      this.wakeLock = null;
+    }
+  }
+
+  enterBackgroundMode() {
+    if (!this.videoElement) return;
+
+    console.log('Entering background mode');
+
+    if (this.isIOS()) {
+      this.setupAudioContext();
+    }
+
+    if (!this.isPlaying) {
+      this.videoElement.play().catch(console.error);
+    }
+  }
+
+  exitBackgroundMode() {
+    console.log('Exiting background mode');
+
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
+  }
+
+  setupAudioContext() {
+    if (!this.videoElement) return;
+    try {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const source = this.audioContext.createMediaElementSource(this.videoElement);
+      source.connect(this.audioContext.destination);
+
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 0;
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      oscillator.start();
+
+    } catch (error) {
+      console.error('Error setting up audio context:', error);
+    }
+  }
+
+  handleVideoEnd() {
+    this.isPlaying = false;
+    this.updatePlaybackState('none');
+
+    if (this.autoPlayNext && this.videoList && this.onNextVideo) {
+      const nextIndex = this.currentVideoIndex + 1;
+      if (nextIndex < this.videoList.length) {
+        setTimeout(() => {
+          this.playNextVideo();
+        }, 1000);
+      }
+    }
+  }
+
+  playNextVideo() {
+    if (this.videoList && this.onNextVideo) {
+      const nextIndex = this.currentVideoIndex + 1;
+      if (nextIndex < this.videoList.length) {
+        this.currentVideoIndex = nextIndex;
+        this.onNextVideo(nextIndex);
+
+        const nextVideo = this.videoList[nextIndex];
+        if (nextVideo && 'mediaSession' in navigator) {
+          this.updateMediaSession(nextVideo);
+        }
+      }
+    }
+  }
+
+  playPreviousVideo() {
+    if (this.videoList && this.onNextVideo) {
+      const prevIndex = Math.max(0, this.currentVideoIndex - 1);
+      if (prevIndex !== this.currentVideoIndex) {
+        this.currentVideoIndex = prevIndex;
+        this.onNextVideo(prevIndex);
+
+        const prevVideo = this.videoList[prevIndex];
+        if (prevVideo && 'mediaSession' in navigator) {
+          this.updateMediaSession(prevVideo);
+        }
+      }
+    }
+  }
+  
+  updateMediaSession(videoInfo: any) {
+    if (!('mediaSession' in navigator) || !videoInfo) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: videoInfo.title,
+      artist: videoInfo.channel,
+      album: 'MyTUBE',
+      artwork: [
+        { src: videoInfo.thumbnail, sizes: '96x96', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '128x128', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '192x192', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '256x256', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '384x384', type: 'image/jpeg' },
+        { src: videoInfo.thumbnail, sizes: '512x512', type: 'image/jpeg' }
+      ]
+    });
+  }
+
+  updatePlaybackState(state: "none" | "paused" | "playing") {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = state;
+  }
+
+  setPlayingState(playing: boolean) {
+    this.isPlaying = playing;
+    this.updatePlaybackState(playing ? 'playing' : 'paused');
+
+    if (playing) {
+      this.requestWakeLock();
+    } else {
+      this.releaseWakeLock();
+    }
+  }
+
+  setAutoPlayNext(autoPlay: boolean) {
+    this.autoPlayNext = autoPlay;
+  }
+
+  updateVideoInfo(videoInfo: any, index: number) {
+    this.currentVideoIndex = index;
+    if ('mediaSession' in navigator && videoInfo) {
+      this.updateMediaSession(videoInfo);
+    }
+  }
+
+  isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  }
+
+  isAndroid() {
+    return /Android/.test(navigator.userAgent);
   }
 
   cleanup() {
-    console.log('Cleaning up BackgroundPlayService.');
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
+
+    if (this.wakeLock) {
+      this.releaseWakeLock();
+    }
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.setActionHandler('play', null);
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('seekbackward', null);
+      navigator.mediaSession.setActionHandler('seekforward', null);
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+    }
+
+    this.videoElement = null;
+    this.isPlaying = false;
+    this.videoList = [];
+    this.onNextVideo = null;
   }
 }
 
