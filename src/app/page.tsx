@@ -95,12 +95,14 @@ export default function Home() {
 
   useEffect(() => {
     if (videoToPlay) {
-      // Find the video in the current list to ensure all data is up-to-date
-      const videoFromList = videos.find((v) => v.id === videoToPlay.id);
-      handleVideoClick(videoFromList || videoToPlay);
+      const videoIndexInQueue = queue.findIndex(v => v.id === videoToPlay.id);
+      if(videoIndexInQueue !== -1) {
+        setQueue(prev => prev.slice(videoIndexInQueue));
+      }
+      handleVideoClick(videoToPlay);
       clearVideoToPlay();
     }
-  }, [videoToPlay]);
+  }, [videoToPlay, clearVideoToPlay]);
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -164,8 +166,16 @@ export default function Home() {
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex items-center gap-3">
             {categories.map((category) => (
-              <button
+              <div
                 key={category}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleCategorySelect(category)}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' || e.key === ' '
+                    ? handleCategorySelect(category)
+                    : null
+                }
                 className={cn(
                   'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-base font-medium transition-colors',
                   {
@@ -175,10 +185,9 @@ export default function Home() {
                       activeCategory !== category,
                   }
                 )}
-                onClick={() => handleCategorySelect(category)}
               >
                 {category}
-              </button>
+              </div>
             ))}
           </div>
         </div>
