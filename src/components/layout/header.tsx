@@ -1,13 +1,22 @@
 'use client';
-import { Search, Youtube, Bell, Upload, Settings } from 'lucide-react';
+import {
+  Search,
+  Youtube,
+  Bell,
+  Upload,
+  Settings,
+  ListMusic,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
+import { useQueue } from '@/context/QueueContext';
 
 export default function Header() {
   const router = useRouter();
+  const { toggleQueue, queue } = useQueue();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,6 +59,20 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          onClick={toggleQueue}
+        >
+          <ListMusic className="h-5 w-5" />
+          <span className="sr-only">Daftar Antrean</span>
+          {queue.length > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+              {queue.length}
+            </span>
+          )}
+        </Button>
         <Button variant="ghost" size="icon" className="h-9 w-9">
           <Upload className="h-5 w-5" />
           <span className="sr-only">Upload</span>

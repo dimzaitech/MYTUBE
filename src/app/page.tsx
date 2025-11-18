@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 import VideoPlayer from '@/components/videos/VideoPlayer';
+import { useQueue } from '@/context/QueueContext';
 
 const categories = [
   'Semua',
@@ -54,6 +55,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
+  const { playNextInQueue, playFromQueue, queue } = useQueue();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,10 +80,26 @@ export default function Home() {
   };
 
   const handleClosePlayer = () => {
-    setIsPlayerOpen(false);
-    setSelectedVideo(null);
-    document.body.classList.remove('no-scroll');
+    const nextVideo = playNextInQueue();
+    if (nextVideo) {
+      setSelectedVideo(nextVideo);
+      setIsPlayerOpen(true);
+    } else {
+      setIsPlayerOpen(false);
+      setSelectedVideo(null);
+      document.body.classList.remove('no-scroll');
+    }
   };
+  
+  useEffect(() => {
+    // Logic to start playing directly from queue
+    if (queue.length > 0 && !isPlayerOpen) {
+       const videoToPlay = queue[0];
+       playFromQueue(videoToPlay); // This will adjust the queue
+       handleVideoClick(videoToPlay);
+    }
+  }, [queue, isPlayerOpen]);
+
 
   useEffect(() => {
     const fetchVideos = async () => {

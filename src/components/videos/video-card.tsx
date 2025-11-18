@@ -1,6 +1,10 @@
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { FormattedVideo } from '@/services/youtubeService';
+import { Button } from '@/components/ui/button';
+import { Plus, Play } from 'lucide-react';
+import { useQueue } from '@/context/QueueContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface VideoCardProps {
   video: FormattedVideo;
@@ -8,6 +12,27 @@ interface VideoCardProps {
 }
 
 export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
+  const { addToQueue } = useQueue();
+  const { toast } = useToast();
+
+  const handleAddToQueue = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.stopPropagation();
+    addToQueue(video);
+    toast({
+      title: 'Ditambahkan ke Antrean',
+      description: `${video.title}`,
+    });
+  };
+
+  const handlePlayClick = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.stopPropagation();
+    onVideoClick(video);
+  };
+
   return (
     <div
       className="group block cursor-pointer"
@@ -20,9 +45,29 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
             alt={video.title}
             width={320}
             height={180}
-            className="aspect-video w-full object-cover transition-all duration-200 group-hover:rounded-none"
+            className="aspect-video w-full object-cover transition-all duration-300 group-hover:scale-110"
             data-ai-hint="video thumbnail"
           />
+          <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+          <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <Button
+              size="icon"
+              className="h-10 w-10 rounded-full bg-primary/80 backdrop-blur-sm hover:bg-primary"
+              aria-label="Play"
+              onClick={handlePlayClick}
+            >
+              <Play className="h-5 w-5 fill-current" />
+            </Button>
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-10 w-10 rounded-full bg-secondary/80 backdrop-blur-sm hover:bg-secondary"
+              aria-label="Tambah ke antrean"
+              onClick={handleAddToQueue}
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          </div>
           <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1 py-0.5 text-xs text-white">
             {video.duration}
           </span>
