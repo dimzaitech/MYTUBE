@@ -1,5 +1,6 @@
 'use client';
 
+import YouTube from 'react-youtube';
 import {
   Dialog,
   DialogContent,
@@ -8,40 +9,44 @@ import {
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  getVideoEmbedUrl,
-  type FormattedVideo,
-} from '@/services/youtubeService';
+import { type FormattedVideo } from '@/services/youtubeService';
 
 interface VideoPlayerProps {
   video: FormattedVideo | null;
   isOpen: boolean;
   onClose: () => void;
+  onEnd: () => void;
 }
 
 export default function VideoPlayer({
   video,
   isOpen,
   onClose,
+  onEnd,
 }: VideoPlayerProps) {
   if (!video) {
     return null;
   }
 
-  const videoSrc = getVideoEmbedUrl(video.id);
+  const opts = {
+    height: '100%',
+    width: '100%',
+    playerVars: {
+      autoplay: 1,
+      rel: 0,
+    },
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full p-0 !gap-0 border-0">
-        <div className="aspect-video w-full">
-          <iframe
-            src={videoSrc}
-            title={video.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="h-full w-full"
-          ></iframe>
+        <div className="aspect-video w-full bg-black">
+          <YouTube
+            videoId={video.id}
+            opts={opts}
+            className="w-full h-full"
+            onEnd={onEnd}
+          />
         </div>
         <div className="p-4">
           <DialogHeader>
