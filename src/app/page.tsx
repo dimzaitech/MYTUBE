@@ -55,7 +55,8 @@ export default function Home() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
-  const { playNextInQueue, videoToPlay, clearVideoToPlay } = useQueue();
+  const { playNextInQueue, videoToPlay, clearVideoToPlay, playFromQueue } =
+    useQueue();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,7 +94,14 @@ export default function Home() {
 
   useEffect(() => {
     if (videoToPlay) {
-      handleVideoClick(videoToPlay);
+      const videoIndex = videos.findIndex((v) => v.id === videoToPlay.id);
+      if (videoIndex > -1) {
+        handleVideoClick(videoToPlay);
+      } else {
+        // Jika video tidak ada di daftar saat ini, muat ulang atau cari
+        // Untuk sederhana, kita akan memutarnya langsung
+        handleVideoClick(videoToPlay);
+      }
       clearVideoToPlay();
     }
   }, [videoToPlay]);
@@ -164,7 +172,7 @@ export default function Home() {
                 key={category}
                 variant={activeCategory === category ? 'default' : 'secondary'}
                 size="sm"
-                className="h-9 shrink-0 rounded-full px-4 py-2 text-base transition-colors md:h-8 md:px-3 md:py-1.5 md:text-sm"
+                className="h-9 shrink-0 rounded-full px-4 text-base transition-colors md:h-8 md:px-3 md:text-sm"
                 onClick={() => handleCategorySelect(category)}
               >
                 {category}
