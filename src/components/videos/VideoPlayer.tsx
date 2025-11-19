@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import YouTube from 'react-youtube';
+import type { YouTubePlayer } from 'react-youtube';
 import {
   Dialog,
   DialogContent,
@@ -30,13 +31,12 @@ export default function VideoPlayer({
   onEnd,
 }: VideoPlayerProps) {
   const [isCastAvailable, setIsCastAvailable] = useState(false);
+  const playerRef = useRef<YouTubePlayer | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for cast availability periodically
     const interval = setInterval(() => {
-      const available =
-        castService.getCastState() !== 'NO_DEVICES_AVAILABLE';
+      const available = castService.getCastState() !== 'NO_DEVICES_AVAILABLE';
       if (available !== isCastAvailable) {
         setIsCastAvailable(available);
       }
@@ -44,75 +44,68 @@ export default function VideoPlayer({
 
     return () => clearInterval(interval);
   }, [isCastAvailable]);
-
+  
   useEffect(() => {
     if (isOpen && video) {
-      console.warn(
-        'Attempting to set up background play. This will not work with the YouTube iframe.'
-      );
       backgroundPlayService.setupBackgroundPlay(
-        null, // videoRef.current is not available with react-youtube
+        null, 
         {
           title: video.title,
-          channel: video.channelName,
-          thumbnail: video.thumbnailUrl,
+          artist: video.channelName,
+          album: 'MyTUBE',
+          artwork: [
+            { src: video.thumbnailUrl, sizes: '512x512', type: 'image/jpeg' }
+          ],
         },
         [],
         0,
         onEnd
       );
       backgroundPlayService.setAutoPlayNext(true);
-    }
-
-    return () => {
-      if (!isOpen) {
+    } else {
         backgroundPlayService.cleanup();
-      }
+    }
+    
+    return () => {
+        if (!isOpen) {
+            backgroundPlayService.cleanup();
+        }
     };
   }, [isOpen, video, onEnd]);
 
+
   useEffect(() => {
-    if (video && isOpen) {
-      backgroundPlayService.updateVideoInfo(
-        {
-          title: video.title,
-          channel: video.channelName,
-          thumbnail: video.thumbnailUrl,
-        },
-        0
-      );
+    if (video && isOpen && playerRef.current) {
+      backgroundPlayService.updateMediaSession({
+        title: video.title,
+        artist: video.channelName,
+        album: 'MyTUBE',
+        artwork: [{ src: video.thumbnailUrl, sizes: '512x512', type: 'image/jpeg' }]
+      });
     }
   }, [video, isOpen]);
+
 
   const handleCastVideo = async () => {
     if (!video) return;
 
-    // A real implementation would need a way to get the direct video stream URL,
-    // which the YouTube API doesn't provide for free.
-    // We'll simulate this with a placeholder.
     toast({
       title: 'Fitur Casting Dalam Pengembangan',
-      description: 'Casting video dari YouTube secara langsung memerlukan akses API yang berbeda.',
+      description:
+        'Mencoba fallback dengan membuka di YouTube...',
     });
 
-    // Example of how it would work with a direct URL:
-    /*
-    const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-    const success = await castService.castVideo({
-      videoUrl,
-      title: video.title,
-      channel: video.channelName,
-      thumbnail: video.thumbnailUrl,
-      currentTime: 0, // Ideally, get current time from the player
-    });
-
-    if (success) {
-      toast({ title: 'Casting to TV...' });
-      onClose(); // Close the local player
+    // Fallback: Open in YouTube app on mobile, or new tab on desktop
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.open(`vnd.youtube:${video.id}`);
     } else {
-      toast({ variant: 'destructive', title: 'Casting Failed', description: 'Could not connect to the device.' });
+      window.open(
+        `https://www.youtube.com/watch?v=${video.id}`,
+        '_blank',
+        'noopener,noreferrer'
+      );
     }
-    */
   };
 
   const handleClosePlayer = () => {
@@ -130,23 +123,36 @@ export default function VideoPlayer({
     playerVars: {
       autoplay: 1,
       rel: 0,
+      modestbranding: 1,
+      showinfo: 0,
+      playsinline: 1,
     },
   };
+  
+  const onPlayerStateChange = (event: { data: number }) => {
+    if (event.data === window.YT.PlayerState.PLAYING) {
+      backgroundPlayService.setPlayingState(true);
+    } else if (event.data === window.YT.PlayerState.PAUSED) {
+      backgroundPlayService.setPlayingState(false);
+    } else if (event.data === window.YT.PlayerState.ENDED) {
+      onEnd();
+    }
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClosePlayer}>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 !gap-0 bg-black">
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 !gap-0 bg-card">
         <div className="aspect-video w-full bg-black">
           <YouTube
             videoId={video.id}
             opts={opts}
             className="w-full h-full"
             onReady={(event) => {
-              // The 'event.target' is the YouTube player object.
+              playerRef.current = event.target;
             }}
-            onPlay={() => backgroundPlayService.setPlayingState(true)}
-            onPause={() => backgroundPlayService.setPlayingState(false)}
-            onEnd={onEnd}
+            onStateChange={onPlayerStateChange}
+            onError={(e) => console.error('YouTube Player Error:', e)}
           />
         </div>
         <div className="p-4">
@@ -175,7 +181,7 @@ export default function VideoPlayer({
               </div>
             </div>
             <div className="flex items-center gap-2">
-               {isCastAvailable && (
+              {isCastAvailable && (
                 <Button
                   onClick={handleCastVideo}
                   className="gap-2 h-auto text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/20 bg-black/50 text-white hover:bg-primary/80 hover:border-primary"

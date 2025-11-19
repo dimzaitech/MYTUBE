@@ -23,7 +23,16 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
   
   const handleSimpleCast = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.open(`vnd.youtube:${video.id}`);
+    } else {
+      window.open(
+        `https://www.youtube.com/watch?v=${video.id}`,
+        '_blank',
+        'noopener,noreferrer'
+      );
+    }
   };
 
   return (
