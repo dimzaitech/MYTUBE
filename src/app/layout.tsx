@@ -74,7 +74,7 @@ export default function RootLayout({
           <div className="flex min-h-screen w-full flex-col">
             <Header />
             <div className="flex flex-1">
-              <main className="flex-1 p-4 sm:p-6 lg:p-8">
+              <main className="flex-1">
                 <Suspense fallback={<div>Memuat...</div>}>{children}</Suspense>
               </main>
               <QueueDrawer />

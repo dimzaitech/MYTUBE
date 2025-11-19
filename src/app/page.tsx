@@ -48,7 +48,7 @@ export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Semua');
-  const [selectedVideo, setSelectedVideo]_useState<FormattedVideo | null>(
+  const [selectedVideo, setSelectedVideo] = useState<FormattedVideo | null>(
     null
   );
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
@@ -168,28 +168,28 @@ export default function Home() {
         onClose={handleClosePlayer}
         onEnd={playNextVideo}
       />
-      <div className="mb-6 block md:hidden">
-        <form onSubmit={handleSearch} className="w-full">
-          <div className="relative">
-            <Input
-              name="q"
-              placeholder="Cari..."
-              className="w-full rounded-full border-2 border-border bg-background pr-16"
-              defaultValue={searchQuery ?? ''}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              variant="ghost"
-              className="absolute inset-y-0 right-0 h-full rounded-l-none rounded-r-full border-y-2 border-r-2 border-border bg-accent hover:bg-accent/80"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-          </div>
-        </form>
-      </div>
+      <div className="sticky top-16 z-20 bg-background/95 py-2 shadow-sm backdrop-blur-sm">
+        <div className="mb-4 block px-4 md:hidden">
+            <form onSubmit={handleSearch} className="w-full">
+            <div className="relative">
+                <Input
+                name="q"
+                placeholder="Cari..."
+                className="w-full rounded-full border-2 border-border bg-background pr-16"
+                defaultValue={searchQuery ?? ''}
+                />
+                <Button
+                type="submit"
+                size="icon"
+                variant="ghost"
+                className="absolute inset-y-0 right-0 h-full rounded-l-none rounded-r-full border-y-2 border-r-2 border-border bg-accent hover:bg-accent/80"
+                >
+                <Search className="h-5 w-5" />
+                </Button>
+            </div>
+            </form>
+        </div>
 
-      <div className="sticky top-0 z-20 -mx-4 bg-background/80 py-4 backdrop-blur-sm sm:-mx-6 sm:px-2 lg:-mx-8 lg:px-4">
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex items-center gap-3 px-4 sm:px-0">
             {categories.map((category) => (
@@ -204,7 +204,7 @@ export default function Home() {
                     : null
                 }
                 className={cn(
-                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors md:text-sm md:px-3 md:py-1.5',
+                  'shrink-0 cursor-pointer whitespace-nowrap rounded-full px-4 py-2 text-base font-medium transition-colors',
                   {
                     'bg-primary text-primary-foreground hover:bg-primary/90':
                       activeCategory === category,
@@ -220,7 +220,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 px-4">
         {searchQuery && (
           <div className="my-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:my-6 md:p-4">
             <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
