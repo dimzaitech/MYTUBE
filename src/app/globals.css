@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 6%;
+    --background: 0 0% 6%; /* #0f0f0f */
     --foreground: 0 0% 98%;
-    --card: 0 0% 15%;
+    --card: 0 0% 6%; /* #0f0f0f */
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 6%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 100% 50%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 20%;
+    --primary: 0 0% 98%; /* White for active category */
+    --primary-foreground: 0 0% 6%; /* Black for active category text */
+    --secondary: 0 0% 15%; /* #272727 for inactive category */
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 0 0% 25%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%; /* #a3a3a3 */
+    --accent: 0 0% 15%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 0 100% 50%;
+    --border: 0 0% 15%; /* #272727 */
+    --input: 0 0% 15%;
+    --ring: 0 0% 98%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -39,6 +39,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    line-height: 1.4;
   }
 }
 
@@ -53,28 +55,9 @@
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 body.no-scroll {
   overflow: hidden;
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: #0F0F0F;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 4px;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
 }
