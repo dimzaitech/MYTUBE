@@ -87,7 +87,7 @@ export default function Home() {
     const nextInQueue = playNextInQueue();
     if (nextInQueue) {
       setSelectedVideo(nextInQueue);
-      setIsPlayerOpen(true);
+      setIsPlayerOpen(true); // Pastikan player tetap terbuka
       return;
     }
 
@@ -96,11 +96,12 @@ export default function Home() {
       if (currentIndex !== -1 && currentIndex < videos.length - 1) {
         const nextVideo = videos[currentIndex + 1];
         setSelectedVideo(nextVideo);
-        setIsPlayerOpen(true);
+        setIsPlayerOpen(true); // Pastikan player tetap terbuka
         return;
       }
     }
-
+    
+    // Jika tidak ada video lagi di antrean atau di daftar, tutup player
     handleClosePlayer();
   };
 
