@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { FormattedVideo } from '@/services/youtubeService';
 import { useQueue } from '@/context/QueueContext';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical, Play } from 'lucide-react';
 
 interface VideoCardProps {
   video: FormattedVideo;
@@ -35,6 +35,9 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
             className="aspect-video w-full object-cover"
             data-ai-hint="video thumbnail"
           />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+            <Play className="h-12 w-12 text-white" fill="white" />
+          </div>
           <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
             {video.duration}
           </span>
