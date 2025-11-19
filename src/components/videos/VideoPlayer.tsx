@@ -176,7 +176,10 @@ export default function VideoPlayer({
             </div>
             <div className="flex items-center gap-2">
                {isCastAvailable && (
-                <Button variant="outline" size="sm" onClick={handleCastVideo} className='gap-2'>
+                <Button
+                  onClick={handleCastVideo}
+                  className="gap-2 h-auto text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/20 bg-black/50 text-white hover:bg-primary/80 hover:border-primary"
+                >
                   <Cast className="h-4 w-4" /> Cast to TV
                 </Button>
               )}
