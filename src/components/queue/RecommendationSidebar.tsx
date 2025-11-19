@@ -17,7 +17,7 @@ export default function RecommendationSidebar() {
       )}>
       <div className={cn("flex h-full flex-col", isQueueOpen && selectedVideo ? 'opacity-100' : 'opacity-0 invisible')}>
         <div className="flex h-16 items-center justify-between border-b px-4">
-          <h2 className="text-lg font-semibold">Selanjutnya</h2>
+          <h2 className="text-lg font-semibold">Berikutnya</h2>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -56,6 +56,9 @@ export default function RecommendationSidebar() {
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {video.channelName}
+                    </p>
+                     <p className="text-xs text-muted-foreground">
+                      {video.views}
                     </p>
                   </div>
                   <Button
