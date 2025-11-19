@@ -53,7 +53,7 @@ export default function ProfilePage() {
   return (
     <ClientOnly>
       <div className="container mx-auto max-w-4xl p-4 md:p-6">
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold">📊 Pengaturan & Kuota</h1>
           <p className="text-muted-foreground">
             Kelola kunci API dan pantau sisa kuota harian.
