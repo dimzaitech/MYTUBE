@@ -111,37 +111,44 @@ export default function Home() {
     setSelectedVideo(null);
     document.body.classList.remove('no-scroll');
   };
-  
+
   const fetchVideos = async (pageToken = '') => {
-      const isInitialLoad = pageToken === '';
-      if(isInitialLoad) setLoading(true);
-      else setLoadingMore(true);
+    const isInitialLoad = pageToken === '';
+    if (isInitialLoad) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
 
-      try {
-        let result;
-        if (searchQuery) {
-          const categoryQuery =
-            activeCategory !== 'Semua' ? categoryQueries[activeCategory] : '';
-          const finalQuery = `${searchQuery} ${categoryQuery}`.trim();
-          result = await searchVideos(finalQuery, 20, pageToken);
-        } else if (activeCategory === 'Semua') {
-          result = await getTrendingVideos(20, pageToken);
-        } else {
-          const query = categoryQueries[activeCategory];
-          result = await searchVideos(query, 20, pageToken);
-        }
-        
-        setVideos(prev => isInitialLoad ? result.videos : [...prev, ...result.videos]);
-        setNextPageToken(result.nextPageToken);
-      } catch (error) {
-        console.error('Failed to fetch videos:', error);
-        if (isInitialLoad) setVideos([]);
-      } finally {
-        if(isInitialLoad) setLoading(false);
-        else setLoadingMore(false);
+    try {
+      let result;
+      if (searchQuery) {
+        const categoryQuery =
+          activeCategory !== 'Semua' ? categoryQueries[activeCategory] : '';
+        const finalQuery = `${searchQuery} ${categoryQuery}`.trim();
+        result = await searchVideos(finalQuery, 20, pageToken);
+      } else if (activeCategory === 'Semua') {
+        result = await getTrendingVideos(20, pageToken);
+      } else {
+        const query = categoryQueries[activeCategory];
+        result = await searchVideos(query, 20, pageToken);
       }
-    };
 
+      setVideos((prev) =>
+        isInitialLoad ? result.videos : [...prev, ...result.videos]
+      );
+      setNextPageToken(result.nextPageToken);
+    } catch (error) {
+      console.error('Failed to fetch videos:', error);
+      if (isInitialLoad) setVideos([]);
+    } finally {
+      if (isInitialLoad) {
+        setLoading(false);
+      } else {
+        setLoadingMore(false);
+      }
+    }
+  };
 
   useEffect(() => {
     if (videoToPlay) {
@@ -156,17 +163,18 @@ export default function Home() {
 
   useEffect(() => {
     fetchVideos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, activeCategory]);
-  
+
   const handleLoadMore = () => {
     if (nextPageToken && !loadingMore) {
-        fetchVideos(nextPageToken);
+      fetchVideos(nextPageToken);
     }
-  }
+  };
 
   if (selectedVideo) {
     return (
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 lg:flex-row player-content">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 lg:flex-row lg:pt-20 player-content">
         <div className="flex-1 main-content">
           <VideoPlayer
             video={selectedVideo}
@@ -211,8 +219,13 @@ export default function Home() {
           onVideoClick={handleVideoClick}
         />
         {nextPageToken && !loading && (
-          <div className='my-6 text-center'>
-            <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className='gap-2'>
+          <div className="my-6 text-center">
+            <Button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              variant="outline"
+              className="gap-2"
+            >
               {loadingMore ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" />
