@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import YouTube from 'react-youtube';
 import {
   Dialog,
@@ -12,6 +12,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { type FormattedVideo } from '@/services/youtubeService';
 import backgroundPlayService from '@/lib/backgroundPlayService';
+import castService from '@/services/castService';
+import { Cast } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface VideoPlayerProps {
   video: FormattedVideo | null;
@@ -26,6 +29,22 @@ export default function VideoPlayer({
   onClose,
   onEnd,
 }: VideoPlayerProps) {
+  const [isCastAvailable, setIsCastAvailable] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check for cast availability periodically
+    const interval = setInterval(() => {
+      const available =
+        castService.getCastState() !== 'NO_DEVICES_AVAILABLE';
+      if (available !== isCastAvailable) {
+        setIsCastAvailable(available);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isCastAvailable]);
+
   useEffect(() => {
     if (isOpen && video) {
       console.warn(
@@ -64,6 +83,37 @@ export default function VideoPlayer({
       );
     }
   }, [video, isOpen]);
+
+  const handleCastVideo = async () => {
+    if (!video) return;
+
+    // A real implementation would need a way to get the direct video stream URL,
+    // which the YouTube API doesn't provide for free.
+    // We'll simulate this with a placeholder.
+    toast({
+      title: 'Fitur Casting Dalam Pengembangan',
+      description: 'Casting video dari YouTube secara langsung memerlukan akses API yang berbeda.',
+    });
+
+    // Example of how it would work with a direct URL:
+    /*
+    const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+    const success = await castService.castVideo({
+      videoUrl,
+      title: video.title,
+      channel: video.channelName,
+      thumbnail: video.thumbnailUrl,
+      currentTime: 0, // Ideally, get current time from the player
+    });
+
+    if (success) {
+      toast({ title: 'Casting to TV...' });
+      onClose(); // Close the local player
+    } else {
+      toast({ variant: 'destructive', title: 'Casting Failed', description: 'Could not connect to the device.' });
+    }
+    */
+  };
 
   const handleClosePlayer = () => {
     backgroundPlayService.cleanup();
@@ -124,9 +174,16 @@ export default function VideoPlayer({
                 </p>
               </div>
             </div>
-            <Button className="w-full sm:w-auto" size="sm">
-              Subscribe
-            </Button>
+            <div className="flex items-center gap-2">
+               {isCastAvailable && (
+                <Button variant="outline" size="sm" onClick={handleCastVideo} className='gap-2'>
+                  <Cast className="h-4 w-4" /> Cast to TV
+                </Button>
+              )}
+              <Button className="w-full sm:w-auto" size="sm">
+                Subscribe
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
