@@ -157,9 +157,9 @@ export default function Home() {
         onClose={handleClosePlayer}
         onEnd={playNextVideo}
       />
-      <div className="fixed top-[56px] left-0 z-20 w-full border-b border-border bg-background/95 py-3 backdrop-blur-sm">
+      <div className="fixed top-12 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:top-[56px] md:py-3">
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="inline-flex gap-3 px-4">
+          <div className="inline-flex gap-2 px-3 md:gap-3 md:px-4">
             {categories.map((category) => (
               <div
                 key={category}
@@ -172,7 +172,7 @@ export default function Home() {
                     : null
                 }
                 className={cn(
-                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2',
                   {
                     'bg-primary text-primary-foreground':
                       activeCategory === category,
@@ -188,7 +188,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="mt-[120px]">
+      <div className="mt-[96px] md:mt-[120px]">
         <VideoGridDynamic
           loading={loading}
           videos={videos}

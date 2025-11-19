@@ -1,12 +1,5 @@
 'use client';
-import {
-  Search,
-  Youtube,
-  Bell,
-  Upload,
-  Settings,
-  ListMusic,
-} from 'lucide-react';
+import { Search, Youtube, Settings, ListMusic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useQueue } from '@/context/QueueContext';
@@ -15,15 +8,15 @@ export default function Header() {
   const { toggleQueue, queue } = useQueue();
 
   return (
-    <header className="fixed top-0 left-0 z-30 flex h-[56px] w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4">
+    <header className="fixed top-0 left-0 z-30 flex h-12 w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-3 md:h-[56px] md:px-4">
       <div className="flex items-center gap-2">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Youtube className="h-7 w-7 text-red-600" />
-          <span className="text-xl font-semibold">MyTUBE</span>
+          <Youtube className="h-6 w-6 text-red-600 md:h-7 md:w-7" />
+          <span className="text-lg font-semibold md:text-xl">MyTUBE</span>
         </Link>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 md:gap-2">
         <Button
           variant="ghost"
           size="icon"
