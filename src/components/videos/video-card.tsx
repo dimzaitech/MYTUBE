@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { FormattedVideo } from '@/services/youtubeService';
 import { useQueue } from '@/context/QueueContext';
-import { MoreVertical, Play } from 'lucide-react';
+import { MoreVertical, Play, Cast } from 'lucide-react';
 
 interface VideoCardProps {
   video: FormattedVideo;
@@ -18,6 +18,11 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
     e.stopPropagation();
     addToQueue(video);
     // Optional: Add toast notification
+  };
+  
+  const handleSimpleCast = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank');
   };
 
   return (
@@ -64,12 +69,22 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
               <span>{video.uploadedAt}</span>
             </div>
           </div>
-          <button
-            onClick={handleAddToQueue}
-            className="self-start p-1 text-muted-foreground"
-          >
-            <MoreVertical className="h-5 w-5" />
-          </button>
+          <div className="flex self-start">
+            <button
+              onClick={handleSimpleCast}
+              className="p-1 text-muted-foreground hover:text-foreground"
+              title="Open in YouTube to Cast"
+            >
+              <Cast className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleAddToQueue}
+              className="p-1 text-muted-foreground hover:text-foreground"
+              title="Add to queue"
+            >
+              <MoreVertical className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
