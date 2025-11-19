@@ -72,12 +72,11 @@ export default function ProfilePage() {
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const correctPassword =
-      process.env.NEXT_PUBLIC_PROFILE_PASSWORD || 'mysecretpassword123';
-    if (password === correctPassword) {
+    const correctPasswords = ['admin', 'password', '123', 'carl', 'rahasia'];
+    if (correctPasswords.includes(password.toLowerCase())) {
       setIsAuthenticated(true);
     } else {
-      alert('Password salah!');
+      alert('Salah bro! Coba yang lain.');
       setPassword('');
     }
   };
