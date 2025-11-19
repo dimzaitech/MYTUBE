@@ -29,6 +29,7 @@ export default function Header() {
           size="icon"
           className="h-9 w-9"
           onClick={toggleQueue}
+          title="Daftar Antrean"
         >
           <ListMusic className="h-5 w-5" />
           <span className="sr-only">Daftar Antrean</span>
@@ -38,14 +39,14 @@ export default function Header() {
             </span>
           )}
         </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
+        <Button variant="ghost" size="icon" className="h-9 w-9" title="Cari">
           <Search className="h-5 w-5" />
           <span className="sr-only">Search</span>
         </Button>
         <Button variant="ghost" size="icon" asChild className="h-9 w-9">
-          <Link href="/profile" title="Admin Panel">
+          <Link href="/profile" title="Pengaturan & Kuota">
             <Settings className="h-5 w-5" />
-            <span className="sr-only">Admin Panel</span>
+            <span className="sr-only">Pengaturan & Kuota</span>
           </Link>
         </Button>
       </div>
