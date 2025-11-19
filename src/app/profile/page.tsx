@@ -90,9 +90,9 @@ export default function ProfilePage() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <KeyRound className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle>🔒 Akses Terbatas</CardTitle>
+            <CardTitle>🔒 MyTUBE Admin</CardTitle>
             <CardDescription>
-              Hanya developer yang bisa mengakses halaman ini.
+              Masukkan password buat akses kuota.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -104,7 +104,7 @@ export default function ProfilePage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password..."
+                  placeholder="Password..."
                   required
                   className="bg-secondary"
                 />
