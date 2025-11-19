@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -16,11 +17,10 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { KeyRound } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 function SettingsTab() {
   const handleSave = () => {
-    // Logic to save settings can be added here
-    // For now, it just shows an alert
     alert('Pengaturan disimpan! (Fungsionalitas belum diimplementasikan)');
   };
 
@@ -69,15 +69,35 @@ function SettingsTab() {
 export default function ProfilePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const correctPasswords = ['admin', 'password', '123', 'carl', 'rahasia'];
-    if (correctPasswords.includes(password.toLowerCase())) {
-      setIsAuthenticated(true);
-    } else {
-      alert('Salah bro! Coba yang lain.');
-      setPassword('');
+    setError('');
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsAuthenticated(true);
+      } else {
+        setError(data.error || 'Password salah!');
+        setPassword('');
+      }
+    } catch (error) {
+      setError('Gagal terhubung ke server. Coba lagi nanti.');
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -106,15 +126,21 @@ export default function ProfilePage() {
                   placeholder="Password..."
                   required
                   className="bg-secondary"
+                  disabled={isLoading}
                 />
               </div>
-              <Button type="submit" className="w-full">
-                🔑 Masuk
+              {error && (
+                  <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+              )}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Memverifikasi...' : '🔑 Masuk'}
               </Button>
             </form>
 
             <div className="mt-4 rounded-lg bg-secondary p-4 text-center">
-                <p className="text-sm text-muted-foreground"><strong>Hint:</strong> Passwordnya yang gampang, buat elu doang!</p>
+              <p className="text-sm text-muted-foreground"><strong>Hint:</strong> Passwordnya yang gampang, buat elu doang!</p>
             </div>
 
             <Button variant="link" size="sm" asChild className="mt-4 w-full">
