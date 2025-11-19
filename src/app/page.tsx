@@ -10,7 +10,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
-import { cn } from '@/lib/utils';
 import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
@@ -188,28 +187,17 @@ export default function Home() {
         <div className="overflow-x-auto scrollbar-hide">
           <div className="inline-flex gap-2 px-3 md:gap-3 md:px-4">
             {categories.map((category) => (
-              <div
+              <button
                 key={category}
-                role="button"
-                tabIndex={0}
                 onClick={() => handleCategorySelect(category)}
-                onKeyDown={(e) =>
-                  e.key === 'Enter' || e.key === ' '
-                    ? handleCategorySelect(category)
-                    : null
-                }
-                className={cn(
-                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2',
-                  {
-                    'bg-primary text-primary-foreground':
-                      activeCategory === category,
-                    'bg-secondary text-secondary-foreground hover:bg-accent':
-                      activeCategory !== category,
-                  }
-                )}
+                className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2 ${
+                  activeCategory === category
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
+                }`}
               >
                 {category}
-              </div>
+              </button>
             ))}
           </div>
         </div>
