@@ -5,6 +5,7 @@ import Header from '@/components/layout/header';
 import { Suspense } from 'react';
 import { QueueProvider } from '@/context/QueueContext';
 import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'MyTUBE',
@@ -53,17 +54,13 @@ export default function RootLayout({
         ></script>
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="font-body antialiased" suppressHydrationWarning>
+      <body
+        className={cn('font-body antialiased', 'youtube-player-page')}
+        suppressHydrationWarning
+      >
         <QueueProvider>
-          <div className="flex min-h-screen w-full flex-col">
-            <Header />
-            <div className="flex flex-1">
-              <main className="flex-1">
-                <Suspense fallback={<div>Memuat...</div>}>{children}</Suspense>
-              </main>
-              <RecommendationSidebar />
-            </div>
-          </div>
+          <Header />
+          <Suspense fallback={<div>Memuat...</div>}>{children}</Suspense>
           <Toaster />
         </QueueProvider>
         <script

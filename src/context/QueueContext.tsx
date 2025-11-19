@@ -24,7 +24,7 @@ const QueueContext = createContext<QueueContextType | undefined>(undefined);
 
 export const QueueProvider = ({ children }: { children: ReactNode }) => {
   const [queue, setQueue] = useState<FormattedVideo[]>([]);
-  const [isQueueOpen, setQueueOpen] = useState(false);
+  const [isQueueOpen, setQueueOpen] = useState(true);
   const [videoToPlay, setVideoToPlay] = useState<FormattedVideo | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<FormattedVideo | null>(null);
 
@@ -54,6 +54,10 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
     if (videoIndex > -1) {
       setVideoToPlay(video);
       setQueue(prevQueue => prevQueue.slice(videoIndex));
+    } else {
+        // If not in queue, just play it and set queue to empty
+        setSelectedVideo(video);
+        setQueue([]);
     }
   }, [queue]);
   
@@ -62,9 +66,7 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const toggleQueue = () => {
-    if (selectedVideo) { // Hanya toggle jika ada video yang diputar
-        setQueueOpen((prev) => !prev);
-    }
+    setQueueOpen((prev) => !prev);
   };
   
   const clearQueue = () => {

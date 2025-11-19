@@ -1,5 +1,5 @@
 'use client';
-import { Search, Youtube, Settings, ListMusic, Cast } from 'lucide-react';
+import { Search, Youtube, Settings, ListMusic, Cast, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useQueue } from '@/context/QueueContext';
@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import castService from '@/services/castService';
 
 export default function Header() {
-  const { toggleQueue, queue } = useQueue();
+  const { toggleQueue, queue, selectedVideo, setSelectedVideo } = useQueue();
   const [castState, setCastState] = useState('NO_DEVICES_AVAILABLE');
 
   useEffect(() => {
@@ -18,10 +18,53 @@ export default function Header() {
   }, []);
 
   const handleCast = () => {
-    // This is a simplified implementation.
-    // A real implementation would need to get the currently playing video.
     castService.requestSession();
   };
+
+  const handleBack = () => {
+    setSelectedVideo(null);
+  };
+  
+  if (selectedVideo) {
+    return (
+       <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-3 md:h-[56px] md:px-4 player-header">
+        <div className='flex items-center gap-2'>
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handleBack} title="Kembali">
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">Kembali</span>
+            </Button>
+            <Link href="/" className="flex items-center gap-2 font-semibold">
+                <Youtube className="h-6 w-6 text-red-600 md:h-7 md:w-7" />
+                <span className="hidden text-lg font-semibold md:block md:text-xl">MyTUBE</span>
+            </Link>
+        </div>
+         <div className="flex items-center gap-1 md:gap-2 header-actions">
+           {castState !== 'NO_DEVICES_AVAILABLE' && (
+             <Button
+               variant="ghost"
+               size="icon"
+               className="h-9 w-9"
+               onClick={handleCast}
+               title="Cast to TV"
+             >
+               <Cast className="h-5 w-5" />
+               <span className="sr-only">Cast to TV</span>
+             </Button>
+           )}
+           <Button variant="ghost" size="icon" className="h-9 w-9" title="Cari">
+             <Search className="h-5 w-5" />
+             <span className="sr-only">Search</span>
+           </Button>
+           <Button variant="ghost" size="icon" asChild className="h-9 w-9">
+             <Link href="/profile" title="Pengaturan & Kuota">
+               <Settings className="h-5 w-5" />
+               <span className="sr-only">Pengaturan & Kuota</span>
+             </Link>
+           </Button>
+         </div>
+       </header>
+    )
+  }
 
   return (
     <header className="fixed top-0 left-0 z-30 flex h-12 w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-3 md:h-[56px] md:px-4">

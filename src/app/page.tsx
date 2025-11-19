@@ -11,6 +11,7 @@ import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
 import { cn } from '@/lib/utils';
+import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
 
 const categories = [
   'Semua',
@@ -57,8 +58,6 @@ export default function Home() {
     setQueue,
     selectedVideo,
     setSelectedVideo,
-    isQueueOpen,
-    setQueueOpen,
   } = useQueue();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -77,13 +76,10 @@ export default function Home() {
       router.push('/');
     }
     setActiveCategory(category);
-    setSelectedVideo(null); // Close player when changing category
-    setQueueOpen(false);
   };
 
   const handleVideoClick = (video: FormattedVideo) => {
     setSelectedVideo(video);
-    setQueueOpen(true);
     document.body.classList.add('no-scroll');
   };
 
@@ -91,7 +87,6 @@ export default function Home() {
     const nextInQueue = playNextInQueue();
     if (nextInQueue) {
       setSelectedVideo(nextInQueue);
-      setQueueOpen(true);
       return;
     }
 
@@ -100,7 +95,6 @@ export default function Home() {
       if (currentIndex !== -1 && currentIndex < videos.length - 1) {
         const nextVideo = videos[currentIndex + 1];
         setSelectedVideo(nextVideo);
-        setQueueOpen(true);
         return;
       }
     }
@@ -110,7 +104,6 @@ export default function Home() {
 
   const handleClosePlayer = () => {
     setSelectedVideo(null);
-    setQueueOpen(false);
     document.body.classList.remove('no-scroll');
   };
 
@@ -153,56 +146,63 @@ export default function Home() {
     fetchVideos();
   }, [searchQuery, activeCategory]);
 
+  if (selectedVideo) {
+    return (
+      <div className="mx-auto flex max-w-[1400px] gap-6 p-5 player-content">
+        <div className="flex-1 main-content">
+          <VideoPlayer
+            video={selectedVideo}
+            onClose={handleClosePlayer}
+            onEnd={playNextVideo}
+          />
+        </div>
+        <div className="hidden w-[400px] shrink-0 recommendations-sidebar lg:block">
+          <RecommendationSidebar />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      {selectedVideo ? (
-        <VideoPlayer
-          video={selectedVideo}
-          onClose={handleClosePlayer}
-          onEnd={playNextVideo}
-        />
-      ) : (
-        <>
-          <div className="fixed top-12 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:top-[56px] md:py-3">
-            <div className="overflow-x-auto scrollbar-hide">
-              <div className="inline-flex gap-2 px-3 md:gap-3 md:px-4">
-                {categories.map((category) => (
-                  <div
-                    key={category}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => handleCategorySelect(category)}
-                    onKeyDown={(e) =>
-                      e.key === 'Enter' || e.key === ' '
-                        ? handleCategorySelect(category)
-                        : null
-                    }
-                    className={cn(
-                      'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2',
-                      {
-                        'bg-primary text-primary-foreground':
-                          activeCategory === category,
-                        'bg-secondary text-secondary-foreground hover:bg-secondary/80':
-                          activeCategory !== category,
-                      }
-                    )}
-                  >
-                    {category}
-                  </div>
-                ))}
+      <div className="fixed top-12 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:top-[56px] md:py-3">
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="inline-flex gap-2 px-3 md:gap-3 md:px-4">
+            {categories.map((category) => (
+              <div
+                key={category}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleCategorySelect(category)}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' || e.key === ' '
+                    ? handleCategorySelect(category)
+                    : null
+                }
+                className={cn(
+                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2',
+                  {
+                    'bg-primary text-primary-foreground':
+                      activeCategory === category,
+                    'bg-secondary text-secondary-foreground hover:bg-accent':
+                      activeCategory !== category,
+                  }
+                )}
+              >
+                {category}
               </div>
-            </div>
+            ))}
           </div>
+        </div>
+      </div>
 
-          <div className="mt-[96px] md:mt-[120px]">
-            <VideoGridDynamic
-              loading={loading}
-              videos={videos}
-              onVideoClick={handleVideoClick}
-            />
-          </div>
-        </>
-      )}
+      <div className="mt-[96px] md:mt-[120px]">
+        <VideoGridDynamic
+          loading={loading}
+          videos={videos}
+          onVideoClick={handleVideoClick}
+        />
+      </div>
     </>
   );
 }

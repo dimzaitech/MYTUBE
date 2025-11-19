@@ -132,76 +132,88 @@ export default function VideoPlayer({
 
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 mt-12 md:mt-14 w-full">
-        <div className="aspect-video w-full bg-black rounded-xl overflow-hidden">
-          <div id="youtube-player" className="w-full h-full">
-            <YouTube
-              videoId={video.id}
-              opts={opts}
-              className="w-full h-full"
-              onReady={(event) => {
-                playerRef.current = event.target;
-              }}
-              onStateChange={onPlayerStateChange}
-              onError={(e) => console.error('YouTube Player Error:', e)}
-            />
-          </div>
+    <div className="w-full video-info-section">
+      <div className="aspect-video w-full overflow-hidden rounded-xl bg-black video-container">
+        <div id="youtube-player" className="youtube-player h-full w-full">
+          <YouTube
+            videoId={video.id}
+            opts={opts}
+            className="h-full w-full"
+            onReady={(event) => {
+              playerRef.current = event.target;
+            }}
+            onStateChange={onPlayerStateChange}
+            onError={(e) => console.error('YouTube Player Error:', e)}
+          />
         </div>
+      </div>
 
-        <div className="py-4">
-            <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-2">{video.title}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{video.views} &bull; {video.uploadedAt}</p>
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-             <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage
-                  src={video.channelAvatarUrl}
-                  alt={video.channelName}
-                  data-ai-hint="person portrait"
-                />
-                <AvatarFallback>{video.channelName.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="font-semibold text-foreground">
-                  {video.channelName}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  10 jt subscriber
-                </p>
-              </div>
-               <Button 
-                onClick={() => setIsSubscribed(!isSubscribed)}
-                className={`w-full sm:w-auto px-4 py-2 text-sm rounded-full ${isSubscribed ? 'bg-secondary text-secondary-foreground' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
-              >
-                {isSubscribed ? '✓ Disubscribe' : 'Subscribe'}
+      <div className="py-4">
+        <h1 className="text-lg font-semibold leading-snug text-foreground line-clamp-2 video-title-main">
+          {video.title}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground video-stats">
+          <span>{video.views}</span>
+          <span className="mx-2 dot">•</span>
+          <span>{video.uploadedAt}</span>
+        </p>
+      </div>
+      
+      <div className="flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-hide pb-4 mb-4 border-b border-border action-buttons">
+           <div className="flex items-center rounded-full bg-secondary">
+              <Button variant="ghost" size="sm" className="action-btn like-btn rounded-full gap-2 pl-4 pr-3">
+                  <ThumbsUp className="h-5 w-5" /> 123rb
               </Button>
-            </div>
-            
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
-                 <div className="flex items-center rounded-full bg-secondary">
-                    <Button variant="ghost" size="sm" className="rounded-full gap-2 pl-4 pr-3">
-                        <ThumbsUp className="h-5 w-5" /> 123rb
-                    </Button>
-                    <div className="w-px h-6 bg-border"></div>
-                    <Button variant="ghost" size="sm" className="rounded-full px-3">
-                        <ThumbsDown className="h-5 w-5" />
-                    </Button>
-                </div>
-                 <Button variant="secondary" size="sm" className="rounded-full gap-2">
-                    <Share className="h-4 w-4" /> Bagikan
-                </Button>
-                <Button variant="secondary" size="sm" className="rounded-full gap-2">
-                    <ListPlus className="h-4 w-4" /> Simpan
-                </Button>
-                 {isCastAvailable && (
-                    <Button variant="secondary" size="sm" onClick={handleCastVideo} className="gap-2 rounded-full">
-                        <Cast className="h-4 w-4" /> Cast
-                    </Button>
-                 )}
-            </div>
+              <div className="w-px h-6 bg-border"></div>
+              <Button variant="ghost" size="sm" className="action-btn dislike-btn rounded-full px-3">
+                  <ThumbsDown className="h-5 w-5" />
+              </Button>
+          </div>
+           <Button variant="secondary" size="sm" className="action-btn share-btn rounded-full gap-2">
+              <Share className="h-4 w-4" /> Bagikan
+          </Button>
+          <Button variant="secondary" size="sm" className="action-btn save-btn rounded-full gap-2">
+              <ListPlus className="h-4 w-4" /> Simpan
+          </Button>
+           {isCastAvailable && (
+              <Button variant="secondary" size="sm" onClick={handleCastVideo} className="gap-2 rounded-full">
+                  <Cast className="h-4 w-4" /> Cast
+              </Button>
+           )}
+      </div>
+
+      <div className="flex items-center gap-3 py-4 border-b border-border mb-4 channel-info">
+        <Avatar className='channel-avatar h-12 w-12'>
+          <AvatarImage
+            src={video.channelAvatarUrl}
+            alt={video.channelName}
+            data-ai-hint="person portrait"
+          />
+          <AvatarFallback>{video.channelName.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 channel-details">
+          <p className="font-semibold text-foreground channel-name">
+            {video.channelName}
+          </p>
+          <p className="text-xs text-muted-foreground subscriber-count">
+            10 jt subscriber
+          </p>
         </div>
+        <Button 
+          onClick={() => setIsSubscribed(!isSubscribed)}
+          className={`w-full sm:w-auto px-4 py-2 text-sm rounded-full font-semibold transition-colors subscribe-btn ${isSubscribed ? 'subscribed bg-secondary text-muted-foreground hover:bg-accent' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
+        >
+          {isSubscribed ? '✓ Disubscribe' : 'Subscribe'}
+        </Button>
+      </div>
+
+      <div className="p-4 rounded-xl bg-secondary description-section">
+        <p className='text-sm font-medium text-foreground'>{video.views} &bull; {video.uploadedAt}</p>
+        <p className="text-sm text-foreground/80 mt-2 description-text">
+            Deskripsi video akan ditampilkan di sini. Konten ini adalah placeholder karena data deskripsi tidak diambil dari API untuk saat ini.
+        </p>
+      </div>
+
     </div>
   );
 }
