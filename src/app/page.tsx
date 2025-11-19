@@ -48,7 +48,7 @@ export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Semua');
-  const [selectedVideo, setSelectedVideo] = useState<FormattedVideo | null>(
+  const [selectedVideo, setSelectedVideo]_useState<FormattedVideo | null>(
     null
   );
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
@@ -189,9 +189,9 @@ export default function Home() {
         </form>
       </div>
 
-      <div className="sticky top-0 z-20 -mx-4 -mt-4 bg-background/80 p-4 backdrop-blur-sm sm:-mx-6 sm:-mt-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8">
+      <div className="sticky top-0 z-20 -mx-4 bg-background/80 py-4 backdrop-blur-sm sm:-mx-6 sm:px-2 lg:-mx-8 lg:px-4">
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 px-4 sm:px-0">
             {categories.map((category) => (
               <div
                 key={category}
@@ -204,7 +204,7 @@ export default function Home() {
                     : null
                 }
                 className={cn(
-                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-base font-medium transition-colors',
+                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors md:text-sm md:px-3 md:py-1.5',
                   {
                     'bg-primary text-primary-foreground hover:bg-primary/90':
                       activeCategory === category,
@@ -220,35 +220,37 @@ export default function Home() {
         </div>
       </div>
 
-      {searchQuery && (
-        <div className="my-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:my-6 md:p-4">
-          <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
-            Hasil pencarian untuk: "{searchQuery}"
-          </h2>
-          <p className="text-sm text-blue-300">
-            {activeCategory !== 'Semua'
-              ? `Dalam kategori: ${activeCategory}`
-              : 'Di semua kategori'}
-          </p>
-        </div>
-      )}
+      <div className="mt-4">
+        {searchQuery && (
+          <div className="my-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:my-6 md:p-4">
+            <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
+              Hasil pencarian untuk: "{searchQuery}"
+            </h2>
+            <p className="text-sm text-blue-300">
+              {activeCategory !== 'Semua'
+                ? `Dalam kategori: ${activeCategory}`
+                : 'Di semua kategori'}
+            </p>
+          </div>
+        )}
 
-      {activeCategory !== 'Semua' && !searchQuery && (
-        <div className="my-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:my-6 md:p-4">
-          <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
-            Kategori: {activeCategory}
-          </h2>
-          <p className="text-sm text-blue-300">
-            Menampilkan video yang relevan dengan {activeCategory.toLowerCase()}
-          </p>
-        </div>
-      )}
+        {activeCategory !== 'Semua' && !searchQuery && (
+          <div className="my-4 rounded-lg border border-blue-800 bg-blue-900/20 p-3 md:my-6 md:p-4">
+            <h2 className="mb-1 text-lg font-semibold text-blue-100 md:text-xl">
+              Kategori: {activeCategory}
+            </h2>
+            <p className="text-sm text-blue-300">
+              Menampilkan video yang relevan dengan {activeCategory.toLowerCase()}
+            </p>
+          </div>
+        )}
 
-      <VideoGridDynamic
-        loading={loading}
-        videos={videos}
-        onVideoClick={handleVideoClick}
-      />
+        <VideoGridDynamic
+          loading={loading}
+          videos={videos}
+          onVideoClick={handleVideoClick}
+        />
+      </div>
     </>
   );
 }
