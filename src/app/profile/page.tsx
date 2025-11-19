@@ -8,25 +8,39 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { KeyRound } from 'lucide-react';
 
 function SettingsTab() {
+  const handleSave = () => {
+    // Logic to save settings can be added here
+    // For now, it just shows an alert
+    alert('Pengaturan disimpan! (Fungsionalitas belum diimplementasikan)');
+  };
+  
   return (
     <div className="space-y-6">
       <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
-        <h3 className="mb-4 text-lg font-medium">Konfigurasi API</h3>
+        <h3 className="mb-4 text-lg font-medium">Konfigurasi Kuota API</h3>
         <div className="space-y-4">
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="max-requests">Max Permintaan per Kunci</Label>
+            <Label htmlFor="max-requests">Max Kuota per Kunci</Label>
             <Input
               type="number"
               id="max-requests"
-              defaultValue="9000"
+              defaultValue={
+                process.env.NEXT_PUBLIC_MAX_REQUESTS_PER_KEY || '9000'
+              }
               className="bg-input"
             />
             <p className="text-xs text-muted-foreground">
-              Batas permintaan harian sebelum kunci dianggap habis.
+              Batas kuota harian sebelum kunci dianggap habis. (Default: 9000)
             </p>
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -34,17 +48,17 @@ function SettingsTab() {
             <Input
               type="number"
               id="reset-hours"
-              defaultValue="24"
+              defaultValue={process.env.NEXT_PUBLIC_QUOTA_RESET_HOURS || '24'}
               className="bg-input"
             />
             <p className="text-xs text-muted-foreground">
-              Interval dalam jam untuk mereset jumlah penggunaan semua kunci.
+              Interval dalam jam untuk mereset kuota. (Default: 24)
             </p>
           </div>
         </div>
       </div>
       <div className="mt-6 text-center">
-        <Button variant="default" size="sm">
+        <Button onClick={handleSave} variant="default" size="sm">
           Simpan Pengaturan
         </Button>
       </div>
@@ -73,10 +87,12 @@ export default function ProfilePage() {
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-               <KeyRound className="h-8 w-8 text-primary" />
+              <KeyRound className="h-8 w-8 text-primary" />
             </div>
             <CardTitle>🔒 Akses Terbatas</CardTitle>
-            <CardDescription>Hanya developer yang bisa mengakses halaman ini.</CardDescription>
+            <CardDescription>
+              Hanya developer yang bisa mengakses halaman ini.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -95,8 +111,8 @@ export default function ProfilePage() {
                 🔑 Masuk
               </Button>
             </form>
-             <Button variant="link" size="sm" asChild className="mt-4 w-full">
-                <Link href="/">← Kembali ke beranda</Link>
+            <Button variant="link" size="sm" asChild className="mt-4 w-full">
+              <Link href="/">← Kembali ke beranda</Link>
             </Button>
           </CardContent>
         </Card>

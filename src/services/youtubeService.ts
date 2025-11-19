@@ -96,7 +96,8 @@ function formatVideos(
 }
 
 async function fetchWithApiKeyRotation<T extends { items: any[] }>(
-  url: string
+  url: string,
+  endpoint: 'search' | 'videos' | 'channels'
 ): Promise<T> {
   const maxRetries = apiKeyManager.keys.length;
   let attempt = 0;
@@ -117,19 +118,27 @@ async function fetchWithApiKeyRotation<T extends { items: any[] }>(
         throw { ...errorData, status: response.status };
       }
 
-      apiKeyManager.useKey();
+      // Lacak penggunaan berdasarkan endpoint
+      apiKeyManager.useKey(endpoint);
       return await response.json();
     } catch (error: any) {
       console.error(
-        `API request with key ${apiKeyManager.currentIndex + 1} failed:`,
+        `API request with key ${
+          apiKeyManager.currentIndex + 1
+        } failed:`,
         error
       );
       attempt++;
-      apiKeyManager.markFailed();
+      apiKeyManager.markFailed(); // Tandai kunci gagal dan coba ganti
+      if (attempt >= maxRetries) {
+        // Jika sudah mencoba semua kunci, lempar error
+        throw new Error(`API request failed after ${maxRetries} retries.`);
+      }
       console.log(`Retrying request... (${attempt}/${maxRetries})`);
     }
   }
 
+  // Seharusnya tidak pernah sampai sini
   throw new Error(`API request failed after ${maxRetries} retries.`);
 }
 
@@ -143,7 +152,7 @@ async function fetchChannelAvatars(
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/channels?part=snippet&id=${uniqueChannelIds.join(
         ','
-      )}`
+      )}`, 'channels'
     );
     const avatars: Record<string, string> = {};
     if (data.items) {
@@ -173,7 +182,8 @@ export async function getTrendingVideos(
 ): Promise<FormattedVideo[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}&regionCode=ID`
+      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}&regionCode=ID`,
+      'videos'
     );
     return await processVideos(data.items);
   } catch (error) {
@@ -185,7 +195,8 @@ export async function getTrendingVideos(
 async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
   try {
     const data: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`
+      `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`,
+      'videos'
     );
     return data.items;
   } catch (error) {
@@ -200,7 +211,8 @@ export async function searchVideos(
 ): Promise<FormattedVideo[]> {
   try {
     const searchData: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video&regionCode=ID`
+      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video&regionCode=ID`,
+      'search'
     );
 
     const videoIds = searchData.items

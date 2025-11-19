@@ -1,9 +1,25 @@
 'use client';
 
+// Biaya kuota untuk setiap jenis endpoint YouTube API
+const QUOTA_COST = {
+  search: 100,
+  videos: 1,
+  channels: 1,
+  playlists: 1,
+  default: 1,
+};
+
+type QuotaUsage = {
+  used: number;
+  lastReset: number;
+};
+
 class ApiKeyManager {
   public keys: string[] = [];
   public currentIndex: number = 0;
-  public usedCount: Record<number, number> = {};
+  public usedCount: Record<number, QuotaUsage> = {};
+  public dailyLimit: number = 9000;
+  public resetIntervalHours: number = 24;
 
   constructor() {
     this.keys = [
@@ -25,67 +41,111 @@ class ApiKeyManager {
   }
 
   initializeClient() {
+    this.dailyLimit =
+      parseInt(process.env.NEXT_PUBLIC_MAX_REQUESTS_PER_KEY || '9000', 10) ||
+      9000;
+    this.resetIntervalHours =
+      parseInt(process.env.NEXT_PUBLIC_QUOTA_RESET_HOURS || '24', 10) || 24;
+
     this.keys.forEach((_, i) => {
       this.usedCount[i] = this.getStoredCount(i);
+      this.checkAndResetQuota(i);
     });
 
-    this.startResetTimer();
+    this.switchToNextAvailableKey();
   }
 
-  getStoredCount(index: number): number {
+  getStoredCount(index: number): QuotaUsage {
     try {
-      return parseInt(localStorage.getItem(`yt_key_${index}`) || '0', 10);
+      const storedData = localStorage.getItem(`yt_key_${index}_usage`);
+      if (storedData) {
+        return JSON.parse(storedData);
+      }
     } catch {
-      return 0;
+      // Abaikan error parsing
     }
+    return { used: 0, lastReset: Date.now() };
   }
 
-  storeCount(index: number, count: number) {
+  storeCount(index: number, usage: QuotaUsage) {
     try {
-      localStorage.setItem(`yt_key_${index}`, count.toString());
+      localStorage.setItem(`yt_key_${index}_usage`, JSON.stringify(usage));
     } catch (error) {
-      console.warn('Failed to store count:', error);
+      console.warn('Failed to store usage count:', error);
     }
   }
 
-  startResetTimer() {
-    // Reset setiap 24 jam
-    setInterval(() => {
-      this.resetAllCounts();
-    }, 24 * 60 * 60 * 1000);
+  checkAndResetQuota(index: number) {
+    const usage = this.usedCount[index];
+    const resetMs = this.resetIntervalHours * 60 * 60 * 1000;
+    if (Date.now() - usage.lastReset > resetMs) {
+      console.log(`Auto-resetting quota for Key ${index + 1}`);
+      usage.used = 0;
+      usage.lastReset = Date.now();
+      this.storeCount(index, usage);
+    }
   }
 
   getCurrentKey(): string | undefined {
     return this.keys[this.currentIndex];
   }
 
-  useKey() {
+  useKey(endpoint: keyof typeof QUOTA_COST = 'default') {
     if (typeof window === 'undefined') return;
 
-    const currentCount = (this.usedCount[this.currentIndex] || 0) + 1;
-    this.usedCount[this.currentIndex] = currentCount;
-    this.storeCount(this.currentIndex, currentCount);
+    this.checkAndResetQuota(this.currentIndex);
 
-    if (currentCount > 8000) {
-      this.switchToNextKey();
+    const cost = QUOTA_COST[endpoint] || QUOTA_COST.default;
+    const usage = this.usedCount[this.currentIndex];
+
+    usage.used += cost;
+    this.storeCount(this.currentIndex, usage);
+
+    console.log(
+      `Using Key ${this.currentIndex + 1}. Cost: ${cost}. Total Used: ${
+        usage.used
+      }`
+    );
+
+    if (usage.used >= this.dailyLimit) {
+      console.warn(
+        `Key ${this.currentIndex + 1} has reached its daily limit.`
+      );
+      this.switchToNextAvailableKey();
     }
   }
 
-  switchToNextKey() {
-    if (this.keys.length === 0) return;
+  switchToNextAvailableKey(): boolean {
+    if (this.keys.length === 0) return false;
 
-    for (let i = 1; i <= this.keys.length; i++) {
+    for (let i = 0; i < this.keys.length; i++) {
       const nextIndex = (this.currentIndex + i) % this.keys.length;
-      if ((this.usedCount[nextIndex] || 0) < 9000) {
-        this.currentIndex = nextIndex;
-        return;
+      this.checkAndResetQuota(nextIndex);
+      if ((this.usedCount[nextIndex]?.used || 0) < this.dailyLimit) {
+        if (this.currentIndex !== nextIndex) {
+          console.log(`Switching to Key ${nextIndex + 1}`);
+          this.currentIndex = nextIndex;
+        }
+        return true;
       }
     }
+
+    console.error('All API keys have reached their daily limit.');
+    return false;
   }
 
   markFailed() {
     if (typeof window === 'undefined') return;
-    this.switchToNextKey();
+    console.warn(
+      `Key ${this.currentIndex + 1} failed. Switching to next available key.`
+    );
+    // Tandai kunci saat ini hampir habis untuk memaksa pergantian
+    const usage = this.usedCount[this.currentIndex];
+    if (usage) {
+      usage.used = this.dailyLimit;
+      this.storeCount(this.currentIndex, usage);
+    }
+    this.switchToNextAvailableKey();
   }
 
   resetAllCounts() {
@@ -93,17 +153,52 @@ class ApiKeyManager {
 
     console.log('🔄 Resetting all API key counts...');
     this.keys.forEach((_, i) => {
-      this.usedCount[i] = 0;
-      this.storeCount(i, 0);
+      const newUsage = { used: 0, lastReset: Date.now() };
+      this.usedCount[i] = newUsage;
+      this.storeCount(i, newUsage);
     });
     this.currentIndex = 0;
+    console.log('All counts reset. Switched to Key 1.');
   }
 
   getStatus() {
+    const now = Date.now();
+    const resetMs = this.resetIntervalHours * 60 * 60 * 1000;
+
+    const keysInfo = this.keys.map((_, index) => {
+      this.checkAndResetQuota(index); // Pastikan data terbaru
+      const usage = this.usedCount[index] || {
+        used: 0,
+        lastReset: now,
+      };
+      const nextReset = usage.lastReset + resetMs;
+      const hoursUntilReset = Math.max(
+        0,
+        Math.ceil((nextReset - now) / (60 * 60 * 1000))
+      );
+      const isExhausted = usage.used >= this.dailyLimit;
+
+      return {
+        index: index,
+        isActive: this.currentIndex === index && !isExhausted,
+        used: usage.used,
+        limit: this.dailyLimit,
+        status: isExhausted ? 'exhausted' : 'active',
+        nextResetHours: hoursUntilReset,
+        percentage: Math.min(100, (usage.used / this.dailyLimit) * 100),
+      };
+    });
+
+    const totalUsed = keysInfo.reduce((sum, key) => sum + key.used, 0);
+    const totalLimit = keysInfo.length * this.dailyLimit;
+
     return {
-      currentKey: this.currentIndex + 1,
+      currentKeyIndex: this.currentIndex,
       totalKeys: this.keys.length,
-      usedCounts: { ...this.usedCount }, // Return copy
+      keys: keysInfo,
+      totalUsed,
+      totalLimit,
+      lastUpdated: new Date().toISOString(),
     };
   }
 }
