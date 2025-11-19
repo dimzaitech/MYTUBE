@@ -3,34 +3,27 @@
 import { useEffect, useState, useRef } from 'react';
 import YouTube from 'react-youtube';
 import type { YouTubePlayer } from 'react-youtube';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { type FormattedVideo } from '@/services/youtubeService';
 import backgroundPlayService from '@/lib/backgroundPlayService';
 import castService from '@/services/castService';
-import { Cast } from 'lucide-react';
+import { Cast, ThumbsUp, ThumbsDown, Share, ListPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface VideoPlayerProps {
   video: FormattedVideo | null;
-  isOpen: boolean;
   onClose: () => void;
   onEnd: () => void;
 }
 
 export default function VideoPlayer({
   video,
-  isOpen,
   onClose,
   onEnd,
 }: VideoPlayerProps) {
   const [isCastAvailable, setIsCastAvailable] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const { toast } = useToast();
 
@@ -46,7 +39,7 @@ export default function VideoPlayer({
   }, [isCastAvailable]);
   
   useEffect(() => {
-    if (isOpen && video) {
+    if (video) {
       backgroundPlayService.setupBackgroundPlay(
         null, 
         {
@@ -67,15 +60,13 @@ export default function VideoPlayer({
     }
     
     return () => {
-        if (!isOpen) {
-            backgroundPlayService.cleanup();
-        }
+      backgroundPlayService.cleanup();
     };
-  }, [isOpen, video, onEnd]);
+  }, [video, onEnd]);
 
 
   useEffect(() => {
-    if (video && isOpen && playerRef.current) {
+    if (video && playerRef.current) {
       backgroundPlayService.updateMediaSession({
         title: video.title,
         artist: video.channelName,
@@ -83,7 +74,7 @@ export default function VideoPlayer({
         artwork: [{ src: video.thumbnailUrl, sizes: '512x512', type: 'image/jpeg' }]
       });
     }
-  }, [video, isOpen]);
+  }, [video]);
 
 
   const handleCastVideo = async () => {
@@ -125,6 +116,7 @@ export default function VideoPlayer({
       modestbranding: 1,
       showinfo: 0,
       playsinline: 1,
+      controls: 1,
     },
   };
   
@@ -140,9 +132,8 @@ export default function VideoPlayer({
 
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClosePlayer}>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 !gap-0 bg-card rounded-lg overflow-hidden">
-        <div className="aspect-video w-full bg-black">
+    <div className="p-4 md:p-6 lg:p-8 mt-12 md:mt-14 w-full">
+        <div className="aspect-video w-full bg-black rounded-xl overflow-hidden">
           <div id="youtube-player" className="w-full h-full">
             <YouTube
               videoId={video.id}
@@ -156,14 +147,14 @@ export default function VideoPlayer({
             />
           </div>
         </div>
-        <div className="p-3 md:p-4">
-          <DialogHeader>
-            <DialogTitle className="text-lg md:text-xl mb-3 line-clamp-2">
-              {video.title}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
+
+        <div className="py-4">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-2">{video.title}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{video.views} &bull; {video.uploadedAt}</p>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarImage
                   src={video.channelAvatarUrl}
@@ -177,26 +168,40 @@ export default function VideoPlayer({
                   {video.channelName}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {video.views} &bull; {video.uploadedAt}
+                  10 jt subscriber
                 </p>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isCastAvailable && (
-                <Button
-                  onClick={handleCastVideo}
-                  className="gap-2 h-auto text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/20 bg-black/50 text-white hover:bg-primary/80 hover:border-primary"
-                >
-                  <Cast className="h-4 w-4" /> Cast to TV
-                </Button>
-              )}
-              <Button className="w-full sm:w-auto h-auto px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-full bg-red-600 hover:bg-red-700 text-white">
-                Subscribe
+               <Button 
+                onClick={() => setIsSubscribed(!isSubscribed)}
+                className={`w-full sm:w-auto px-4 py-2 text-sm rounded-full ${isSubscribed ? 'bg-secondary text-secondary-foreground' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
+              >
+                {isSubscribed ? '✓ Disubscribe' : 'Subscribe'}
               </Button>
             </div>
-          </div>
+            
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
+                 <div className="flex items-center rounded-full bg-secondary">
+                    <Button variant="ghost" size="sm" className="rounded-full gap-2 pl-4 pr-3">
+                        <ThumbsUp className="h-5 w-5" /> 123rb
+                    </Button>
+                    <div className="w-px h-6 bg-border"></div>
+                    <Button variant="ghost" size="sm" className="rounded-full px-3">
+                        <ThumbsDown className="h-5 w-5" />
+                    </Button>
+                </div>
+                 <Button variant="secondary" size="sm" className="rounded-full gap-2">
+                    <Share className="h-4 w-4" /> Bagikan
+                </Button>
+                <Button variant="secondary" size="sm" className="rounded-full gap-2">
+                    <ListPlus className="h-4 w-4" /> Simpan
+                </Button>
+                 {isCastAvailable && (
+                    <Button variant="secondary" size="sm" onClick={handleCastVideo} className="gap-2 rounded-full">
+                        <Cast className="h-4 w-4" /> Cast
+                    </Button>
+                 )}
+            </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }

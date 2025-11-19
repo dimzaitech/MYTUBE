@@ -5,19 +5,19 @@ import { Button } from '@/components/ui/button';
 import { X, Trash2, ListMusic } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
-export default function QueueDrawer() {
-  const { queue, isQueueOpen, toggleQueue, removeFromQueue, clearQueue, playFromQueue } = useQueue();
-
-  if (!isQueueOpen) {
-    return null;
-  }
+export default function RecommendationSidebar() {
+  const { queue, isQueueOpen, toggleQueue, removeFromQueue, clearQueue, playFromQueue, selectedVideo } = useQueue();
 
   return (
-    <div className="hidden lg:block w-80 shrink-0 border-l bg-background transition-all duration-300 ease-in-out">
-      <div className="flex h-full flex-col">
+    <div className={cn(
+      "hidden lg:block shrink-0 border-l bg-background transition-all duration-300 ease-in-out",
+      isQueueOpen && selectedVideo ? 'w-96' : 'w-0'
+      )}>
+      <div className={cn("flex h-full flex-col", isQueueOpen && selectedVideo ? 'opacity-100' : 'opacity-0 invisible')}>
         <div className="flex h-16 items-center justify-between border-b px-4">
-          <h2 className="text-lg font-semibold">Antrean</h2>
+          <h2 className="text-lg font-semibold">Selanjutnya</h2>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"

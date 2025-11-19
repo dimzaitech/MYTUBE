@@ -11,9 +11,6 @@ import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
 import { cn } from '@/lib/utils';
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 const categories = [
   'Semua',
@@ -48,16 +45,21 @@ export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Semua');
-  const [selectedVideo, setSelectedVideo] = useState<FormattedVideo | null>(
-    null
-  );
-  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q');
   const router = useRouter();
-  const { playNextInQueue, videoToPlay, clearVideoToPlay, queue, setQueue } =
-    useQueue();
+  const {
+    playNextInQueue,
+    videoToPlay,
+    clearVideoToPlay,
+    queue,
+    setQueue,
+    selectedVideo,
+    setSelectedVideo,
+    isQueueOpen,
+    setQueueOpen,
+  } = useQueue();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -75,11 +77,13 @@ export default function Home() {
       router.push('/');
     }
     setActiveCategory(category);
+    setSelectedVideo(null); // Close player when changing category
+    setQueueOpen(false);
   };
 
   const handleVideoClick = (video: FormattedVideo) => {
     setSelectedVideo(video);
-    setIsPlayerOpen(true);
+    setQueueOpen(true);
     document.body.classList.add('no-scroll');
   };
 
@@ -87,7 +91,7 @@ export default function Home() {
     const nextInQueue = playNextInQueue();
     if (nextInQueue) {
       setSelectedVideo(nextInQueue);
-      setIsPlayerOpen(true); // Pastikan player tetap terbuka
+      setQueueOpen(true);
       return;
     }
 
@@ -96,18 +100,17 @@ export default function Home() {
       if (currentIndex !== -1 && currentIndex < videos.length - 1) {
         const nextVideo = videos[currentIndex + 1];
         setSelectedVideo(nextVideo);
-        setIsPlayerOpen(true); // Pastikan player tetap terbuka
+        setQueueOpen(true);
         return;
       }
     }
-    
-    // Jika tidak ada video lagi di antrean atau di daftar, tutup player
+
     handleClosePlayer();
   };
 
   const handleClosePlayer = () => {
-    setIsPlayerOpen(false);
     setSelectedVideo(null);
+    setQueueOpen(false);
     document.body.classList.remove('no-scroll');
   };
 
@@ -152,50 +155,54 @@ export default function Home() {
 
   return (
     <>
-      <VideoPlayer
-        video={selectedVideo}
-        isOpen={isPlayerOpen}
-        onClose={handleClosePlayer}
-        onEnd={playNextVideo}
-      />
-      <div className="fixed top-12 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:top-[56px] md:py-3">
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="inline-flex gap-2 px-3 md:gap-3 md:px-4">
-            {categories.map((category) => (
-              <div
-                key={category}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleCategorySelect(category)}
-                onKeyDown={(e) =>
-                  e.key === 'Enter' || e.key === ' '
-                    ? handleCategorySelect(category)
-                    : null
-                }
-                className={cn(
-                  'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2',
-                  {
-                    'bg-primary text-primary-foreground':
-                      activeCategory === category,
-                    'bg-secondary text-secondary-foreground hover:bg-secondary/80':
-                      activeCategory !== category,
-                  }
-                )}
-              >
-                {category}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-[96px] md:mt-[120px]">
-        <VideoGridDynamic
-          loading={loading}
-          videos={videos}
-          onVideoClick={handleVideoClick}
+      {selectedVideo ? (
+        <VideoPlayer
+          video={selectedVideo}
+          onClose={handleClosePlayer}
+          onEnd={playNextVideo}
         />
-      </div>
+      ) : (
+        <>
+          <div className="fixed top-12 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:top-[56px] md:py-3">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="inline-flex gap-2 px-3 md:gap-3 md:px-4">
+                {categories.map((category) => (
+                  <div
+                    key={category}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleCategorySelect(category)}
+                    onKeyDown={(e) =>
+                      e.key === 'Enter' || e.key === ' '
+                        ? handleCategorySelect(category)
+                        : null
+                    }
+                    className={cn(
+                      'shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2',
+                      {
+                        'bg-primary text-primary-foreground':
+                          activeCategory === category,
+                        'bg-secondary text-secondary-foreground hover:bg-secondary/80':
+                          activeCategory !== category,
+                      }
+                    )}
+                  >
+                    {category}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-[96px] md:mt-[120px]">
+            <VideoGridDynamic
+              loading={loading}
+              videos={videos}
+              onVideoClick={handleVideoClick}
+            />
+          </div>
+        </>
+      )}
     </>
   );
 }

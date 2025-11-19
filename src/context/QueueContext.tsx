@@ -7,6 +7,8 @@ interface QueueContextType {
   queue: FormattedVideo[];
   isQueueOpen: boolean;
   videoToPlay: FormattedVideo | null;
+  selectedVideo: FormattedVideo | null;
+  setSelectedVideo: React.Dispatch<React.SetStateAction<FormattedVideo | null>>;
   addToQueue: (video: FormattedVideo) => void;
   removeFromQueue: (videoId: string) => void;
   playNextInQueue: () => FormattedVideo | null;
@@ -15,6 +17,7 @@ interface QueueContextType {
   clearQueue: () => void;
   playFromQueue: (video: FormattedVideo) => void;
   clearVideoToPlay: () => void;
+  setQueue: React.Dispatch<React.SetStateAction<FormattedVideo[]>>;
 }
 
 const QueueContext = createContext<QueueContextType | undefined>(undefined);
@@ -23,6 +26,7 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
   const [queue, setQueue] = useState<FormattedVideo[]>([]);
   const [isQueueOpen, setQueueOpen] = useState(false);
   const [videoToPlay, setVideoToPlay] = useState<FormattedVideo | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<FormattedVideo | null>(null);
 
 
   const addToQueue = (video: FormattedVideo) => {
@@ -58,7 +62,9 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const toggleQueue = () => {
-    setQueueOpen((prev) => !prev);
+    if (selectedVideo) { // Hanya toggle jika ada video yang diputar
+        setQueueOpen((prev) => !prev);
+    }
   };
   
   const clearQueue = () => {
@@ -71,6 +77,8 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
         queue,
         isQueueOpen,
         videoToPlay,
+        selectedVideo,
+        setSelectedVideo,
         addToQueue,
         removeFromQueue,
         playNextInQueue,
@@ -79,6 +87,7 @@ export const QueueProvider = ({ children }: { children: ReactNode }) => {
         clearQueue,
         playFromQueue,
         clearVideoToPlay,
+        setQueue,
       }}
     >
       {children}

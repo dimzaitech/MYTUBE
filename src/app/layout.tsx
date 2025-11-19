@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/header';
 import { Suspense } from 'react';
 import { QueueProvider } from '@/context/QueueContext';
-import QueueDrawer from '@/components/queue/QueueDrawer';
+import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
 
 export const metadata: Metadata = {
   title: 'MyTUBE',
@@ -61,7 +61,7 @@ export default function RootLayout({
               <main className="flex-1">
                 <Suspense fallback={<div>Memuat...</div>}>{children}</Suspense>
               </main>
-              <QueueDrawer />
+              <RecommendationSidebar />
             </div>
           </div>
           <Toaster />
