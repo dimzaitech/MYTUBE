@@ -167,7 +167,7 @@ export default function Home() {
 
   if (selectedVideo) {
     return (
-      <div className="mx-auto flex max-w-[1400px] gap-6 p-5 player-content">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 lg:flex-row player-content">
         <div className="flex-1 main-content">
           <VideoPlayer
             video={selectedVideo}
@@ -175,7 +175,7 @@ export default function Home() {
             onEnd={playNextVideo}
           />
         </div>
-        <div className="hidden w-[400px] shrink-0 recommendations-sidebar lg:block">
+        <div className="hidden w-full shrink-0 recommendations-sidebar lg:block lg:w-[400px]">
           <RecommendationSidebar />
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function Home() {
           onVideoClick={handleVideoClick}
         />
         {nextPageToken && !loading && (
-          <div className='text-center my-6'>
+          <div className='my-6 text-center'>
             <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className='gap-2'>
               {loadingMore ? (
                 <>
