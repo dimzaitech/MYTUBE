@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { FormattedVideo } from '@/services/youtubeService';
 import { useQueue } from '@/context/QueueContext';
 import { MoreVertical, Play, Cast } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface VideoCardProps {
   video: FormattedVideo;
@@ -43,6 +44,17 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
             <Play className="h-12 w-12 text-white" fill="white" />
           </div>
+           <div className="absolute top-2 right-2 flex flex-col items-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+            <Button
+              size="sm"
+              onClick={handleSimpleCast}
+              className="h-auto gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs backdrop-blur-sm"
+              title="Open in YouTube to Cast"
+            >
+              <Cast className="h-3 w-3" />
+              <span>Cast</span>
+            </Button>
+          </div>
           <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
             {video.duration}
           </span>
@@ -70,13 +82,6 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
             </div>
           </div>
           <div className="flex self-start">
-            <button
-              onClick={handleSimpleCast}
-              className="p-1 text-muted-foreground hover:text-foreground"
-              title="Open in YouTube to Cast"
-            >
-              <Cast className="h-5 w-5" />
-            </button>
             <button
               onClick={handleAddToQueue}
               className="p-1 text-muted-foreground hover:text-foreground"
