@@ -8,10 +8,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 export default function RecommendationSidebar() {
-  const { queue, removeFromQueue, clearQueue, playFromQueue, selectedVideo } = useQueue();
+  const { queue, removeFromQueue, clearQueue, playFromQueue } = useQueue();
 
   return (
-    <div className={cn('flex h-full flex-col bg-background recommendation-sidebar-list')}>
+    <div
+      className={cn(
+        'hidden h-full flex-col bg-background lg:flex',
+        'recommendation-sidebar-list'
+      )}
+    >
       <div className="flex h-14 items-center justify-between border-b px-4">
         <h2 className="text-lg font-semibold sidebar-title">Berikutnya</h2>
         <Button
@@ -30,25 +35,28 @@ export default function RecommendationSidebar() {
             {queue.map((video) => (
               <div
                 key={video.id}
-                className="sidebar-video-item group flex cursor-pointer gap-2 rounded-lg p-2 hover:bg-accent"
+                className="vertical-video-item group flex cursor-pointer gap-2 rounded-lg p-2 hover:bg-accent"
                 onClick={() => playFromQueue(video)}
               >
-                <div className="relative h-[94px] w-[168px] shrink-0 overflow-hidden rounded-md sidebar-thumbnail">
+                <div className="vertical-thumbnail relative h-[94px] w-[168px] shrink-0 overflow-hidden rounded-md">
                   <Image
                     src={video.thumbnailUrl}
                     alt={video.title}
                     fill
                     className="object-cover"
                   />
+                   <span className="absolute bottom-1 right-1 rounded-sm bg-black/80 px-1 py-0.5 text-xs text-white">
+                      {video.duration}
+                    </span>
                 </div>
-                <div className="flex-1 overflow-hidden sidebar-video-info">
-                  <p className="line-clamp-2 text-sm font-medium leading-tight text-foreground sidebar-video-title">
+                <div className="vertical-video-info flex-1 overflow-hidden">
+                  <p className="vertical-video-title line-clamp-2 text-sm font-medium leading-tight text-foreground">
                     {video.title}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground sidebar-channel-name">
+                  <p className="vertical-channel-name mt-1 text-xs text-muted-foreground">
                     {video.channelName}
                   </p>
-                  <p className="text-xs text-muted-foreground sidebar-video-views">
+                  <p className="vertical-video-views text-xs text-muted-foreground">
                     {video.views}
                   </p>
                 </div>
@@ -60,6 +68,7 @@ export default function RecommendationSidebar() {
                     e.stopPropagation();
                     removeFromQueue(video.id);
                   }}
+                  title="Hapus dari antrean"
                 >
                   <X className="h-4 w-4" />
                 </Button>
