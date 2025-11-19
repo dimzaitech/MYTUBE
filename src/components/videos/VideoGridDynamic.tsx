@@ -27,12 +27,14 @@ const VideoGrid = dynamic(() => import('./video-grid'), {
 
 interface VideoGridDynamicProps {
   loading: boolean;
+  loadingMore?: boolean;
   videos: FormattedVideo[];
   onVideoClick: (video: FormattedVideo) => void;
 }
 
 export default function VideoGridDynamic({
   loading,
+  loadingMore = false,
   videos,
   onVideoClick,
 }: VideoGridDynamicProps) {
@@ -47,7 +49,18 @@ export default function VideoGridDynamic({
   }
 
   if (videos && videos.length > 0) {
-    return <VideoGrid videos={videos} onVideoClick={onVideoClick} />;
+    return (
+      <>
+        <VideoGrid videos={videos} onVideoClick={onVideoClick} />
+        {loadingMore && (
+           <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
+             {[...Array(4)].map((_, i) => (
+               <VideoSkeleton key={`loader-${i}`} />
+             ))}
+           </div>
+        )}
+      </>
+    );
   }
 
   return (

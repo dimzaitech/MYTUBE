@@ -12,6 +12,8 @@ import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
 import { cn } from '@/lib/utils';
 import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 const categories = [
   'Semua',
@@ -45,6 +47,8 @@ const categoryQueries: Record<string, string> = {
 export default function Home() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>('');
   const [activeCategory, setActiveCategory] = useState('Semua');
 
   const searchParams = useSearchParams();
@@ -76,6 +80,8 @@ export default function Home() {
       router.push('/');
     }
     setActiveCategory(category);
+    setVideos([]);
+    setNextPageToken('');
   };
 
   const handleVideoClick = (video: FormattedVideo) => {
@@ -106,6 +112,37 @@ export default function Home() {
     setSelectedVideo(null);
     document.body.classList.remove('no-scroll');
   };
+  
+  const fetchVideos = async (pageToken = '') => {
+      const isInitialLoad = pageToken === '';
+      if(isInitialLoad) setLoading(true);
+      else setLoadingMore(true);
+
+      try {
+        let result;
+        if (searchQuery) {
+          const categoryQuery =
+            activeCategory !== 'Semua' ? categoryQueries[activeCategory] : '';
+          const finalQuery = `${searchQuery} ${categoryQuery}`.trim();
+          result = await searchVideos(finalQuery, 20, pageToken);
+        } else if (activeCategory === 'Semua') {
+          result = await getTrendingVideos(20, pageToken);
+        } else {
+          const query = categoryQueries[activeCategory];
+          result = await searchVideos(query, 20, pageToken);
+        }
+        
+        setVideos(prev => isInitialLoad ? result.videos : [...prev, ...result.videos]);
+        setNextPageToken(result.nextPageToken);
+      } catch (error) {
+        console.error('Failed to fetch videos:', error);
+        if (isInitialLoad) setVideos([]);
+      } finally {
+        if(isInitialLoad) setLoading(false);
+        else setLoadingMore(false);
+      }
+    };
+
 
   useEffect(() => {
     if (videoToPlay) {
@@ -119,32 +156,14 @@ export default function Home() {
   }, [videoToPlay, clearVideoToPlay, queue, setQueue]);
 
   useEffect(() => {
-    const fetchVideos = async () => {
-      setLoading(true);
-      try {
-        let fetchedVideos: FormattedVideo[] = [];
-        if (searchQuery) {
-          const categoryQuery =
-            activeCategory !== 'Semua' ? categoryQueries[activeCategory] : '';
-          const finalQuery = `${searchQuery} ${categoryQuery}`.trim();
-          fetchedVideos = await searchVideos(finalQuery, 24);
-        } else if (activeCategory === 'Semua') {
-          fetchedVideos = await getTrendingVideos(24);
-        } else {
-          const query = categoryQueries[activeCategory];
-          fetchedVideos = await searchVideos(query, 24);
-        }
-        setVideos(fetchedVideos);
-      } catch (error) {
-        console.error('Failed to fetch videos:', error);
-        setVideos([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchVideos();
   }, [searchQuery, activeCategory]);
+  
+  const handleLoadMore = () => {
+    if (nextPageToken && !loadingMore) {
+        fetchVideos(nextPageToken);
+    }
+  }
 
   if (selectedVideo) {
     return (
@@ -199,9 +218,24 @@ export default function Home() {
       <div className="mt-[96px] md:mt-[120px]">
         <VideoGridDynamic
           loading={loading}
+          loadingMore={loadingMore}
           videos={videos}
           onVideoClick={handleVideoClick}
         />
+        {nextPageToken && !loading && (
+          <div className='text-center my-6'>
+            <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline" className='gap-2'>
+              {loadingMore ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Memuat...
+                </>
+              ) : (
+                'Muat Lebih Banyak'
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );
