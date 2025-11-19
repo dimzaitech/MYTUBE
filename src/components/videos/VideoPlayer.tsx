@@ -95,7 +95,6 @@ export default function VideoPlayer({
         'Mencoba fallback dengan membuka di YouTube...',
     });
 
-    // Fallback: Open in YouTube app on mobile, or new tab on desktop
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
       window.open(`vnd.youtube:${video.id}`);
@@ -129,7 +128,7 @@ export default function VideoPlayer({
     },
   };
   
-  const onPlayerStateChange = (event: { data: number }) => {
+  const onPlayerStateChange = (event: { data: number; target: YouTubePlayer }) => {
     if (event.data === window.YT.PlayerState.PLAYING) {
       backgroundPlayService.setPlayingState(true);
     } else if (event.data === window.YT.PlayerState.PAUSED) {
@@ -142,22 +141,24 @@ export default function VideoPlayer({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClosePlayer}>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 !gap-0 bg-card">
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-full p-0 !gap-0 bg-card rounded-lg overflow-hidden">
         <div className="aspect-video w-full bg-black">
-          <YouTube
-            videoId={video.id}
-            opts={opts}
-            className="w-full h-full"
-            onReady={(event) => {
-              playerRef.current = event.target;
-            }}
-            onStateChange={onPlayerStateChange}
-            onError={(e) => console.error('YouTube Player Error:', e)}
-          />
+          <div id="youtube-player" className="w-full h-full">
+            <YouTube
+              videoId={video.id}
+              opts={opts}
+              className="w-full h-full"
+              onReady={(event) => {
+                playerRef.current = event.target;
+              }}
+              onStateChange={onPlayerStateChange}
+              onError={(e) => console.error('YouTube Player Error:', e)}
+            />
+          </div>
         </div>
-        <div className="p-4">
+        <div className="p-3 md:p-4">
           <DialogHeader>
-            <DialogTitle className="text-lg md:text-xl mb-3">
+            <DialogTitle className="text-lg md:text-xl mb-3 line-clamp-2">
               {video.title}
             </DialogTitle>
           </DialogHeader>
@@ -189,7 +190,7 @@ export default function VideoPlayer({
                   <Cast className="h-4 w-4" /> Cast to TV
                 </Button>
               )}
-              <Button className="w-full sm:w-auto" size="sm">
+              <Button className="w-full sm:w-auto h-auto px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-full bg-red-600 hover:bg-red-700 text-white">
                 Subscribe
               </Button>
             </div>

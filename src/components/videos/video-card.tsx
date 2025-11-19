@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { FormattedVideo } from '@/services/youtubeService';
 import { useQueue } from '@/context/QueueContext';
-import { MoreVertical, Play, Cast } from 'lucide-react';
+import { MoreVertical, Play, Cast, ListPlus } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface VideoCardProps {
@@ -18,7 +18,6 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
   ) => {
     e.stopPropagation();
     addToQueue(video);
-    // Optional: Add toast notification
   };
   
   const handleSimpleCast = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -50,14 +49,25 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
             className="aspect-video w-full object-cover"
             data-ai-hint="video thumbnail"
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
-            <Play className="h-12 w-12 text-white" fill="white" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className='w-12 h-12 rounded-full bg-black/50 flex items-center justify-center'>
+                <Play className="h-8 w-8 text-white" fill="white" />
+            </div>
           </div>
            <div className="absolute top-2 right-2 flex flex-col items-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
             <Button
               size="sm"
+              onClick={handleAddToQueue}
+              className="h-auto gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white backdrop-blur-sm hover:bg-primary/80"
+              title="Add to Queue"
+            >
+              <ListPlus className="h-3 w-3" />
+              <span>Antrekan</span>
+            </Button>
+            <Button
+              size="sm"
               onClick={handleSimpleCast}
-              className="h-auto gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs backdrop-blur-sm"
+              className="h-auto gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white backdrop-blur-sm hover:bg-primary/80"
               title="Open in YouTube to Cast"
             >
               <Cast className="h-3 w-3" />
@@ -91,13 +101,15 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
             </div>
           </div>
           <div className="flex self-start">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleAddToQueue}
-              className="p-1 text-muted-foreground hover:text-foreground"
-              title="Add to queue"
+              className="p-1 text-muted-foreground hover:text-foreground h-8 w-8"
+              title="More actions"
             >
               <MoreVertical className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

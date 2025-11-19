@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { X, Trash2, ListMusic } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '../ui/separator';
 
 export default function QueueDrawer() {
   const { queue, isQueueOpen, toggleQueue, removeFromQueue, clearQueue, playFromQueue } = useQueue();
@@ -36,14 +35,14 @@ export default function QueueDrawer() {
         </div>
         <ScrollArea className="flex-1">
           {queue.length > 0 ? (
-            <div className="p-2">
-              {queue.map((video, index) => (
+            <div className="p-2 flex flex-col gap-2">
+              {queue.map((video) => (
                 <div
                   key={video.id}
-                  className="group flex cursor-pointer gap-3 rounded-md p-2 hover:bg-accent"
+                  className="group flex cursor-pointer gap-3 rounded-lg p-2.5 bg-card hover:bg-accent"
                   onClick={() => playFromQueue(video)}
                 >
-                  <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded">
+                  <div className="relative h-[68px] w-[120px] shrink-0 overflow-hidden rounded-md">
                     <Image
                       src={video.thumbnailUrl}
                       alt={video.title}
@@ -51,11 +50,11 @@ export default function QueueDrawer() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="flex-1">
-                    <p className="line-clamp-2 text-sm font-medium leading-tight">
+                  <div className="flex-1 overflow-hidden">
+                    <p className="line-clamp-2 text-sm font-medium leading-tight text-foreground">
                       {video.title}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-1">
                       {video.channelName}
                     </p>
                   </div>
