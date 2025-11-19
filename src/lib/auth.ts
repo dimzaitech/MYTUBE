@@ -1,7 +1,8 @@
 'use client';
 
-// Ganti dengan password yang aman di aplikasi production
-// Ini hanya untuk demo, idealnya menggunakan sistem auth yang proper
+// This file is no longer in use after removing the login functionality.
+// It can be safely deleted or kept for future reference.
+
 const ADMIN_PASSWORD = 'mysecretpassword123';
 
 export class SimpleAuth {
