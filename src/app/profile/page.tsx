@@ -112,6 +112,11 @@ export default function ProfilePage() {
                 🔑 Masuk
               </Button>
             </form>
+
+            <div className="mt-4 rounded-lg bg-secondary p-4 text-center">
+                <p className="text-sm text-muted-foreground"><strong>Hint:</strong> Passwordnya yang gampang, buat elu doang!</p>
+            </div>
+
             <Button variant="link" size="sm" asChild className="mt-4 w-full">
               <Link href="/">← Kembali ke beranda</Link>
             </Button>
