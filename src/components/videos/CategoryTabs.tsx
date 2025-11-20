@@ -21,7 +21,7 @@ export default function CategoryTabs({
               onClick={() => onCategorySelect(category)}
               className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2 ${
                 selectedCategory === category
-                  ? 'bg-primary text-primary-foreground'
+                  ? 'bg-foreground text-background'
                   : 'bg-secondary text-secondary-foreground hover:bg-accent'
               }`}
             >

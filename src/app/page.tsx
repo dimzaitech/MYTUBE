@@ -168,15 +168,15 @@ export default function Home() {
 
   if (selectedVideo) {
     return (
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 lg:flex-row lg:pt-20 player-content">
-        <div className="flex-1 main-content">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 pt-16 lg:flex-row lg:pt-20">
+        <div className="flex-1">
           <VideoPlayer
             video={selectedVideo}
             onClose={handleClosePlayer}
             onEnd={playNextVideo}
           />
         </div>
-        <div className="hidden w-full shrink-0 recommendations-sidebar lg:block lg:w-[400px]">
+        <div className="hidden w-full shrink-0 lg:block lg:w-[400px]">
           <RecommendationSidebar />
         </div>
       </div>

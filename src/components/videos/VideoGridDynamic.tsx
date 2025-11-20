@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { type FormattedVideo } from '@/services/youtubeService';
 import { Youtube } from 'lucide-react';
+import { Button } from '../ui/button';
 
 function VideoSkeleton() {
   return (
@@ -30,6 +31,8 @@ interface VideoGridDynamicProps {
   loadingMore?: boolean;
   videos: FormattedVideo[];
   onVideoClick: (video: FormattedVideo) => void;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 export default function VideoGridDynamic({
@@ -37,6 +40,8 @@ export default function VideoGridDynamic({
   loadingMore = false,
   videos,
   onVideoClick,
+  error,
+  onRetry
 }: VideoGridDynamicProps) {
   if (loading) {
     return (
@@ -46,6 +51,27 @@ export default function VideoGridDynamic({
         ))}
       </div>
     );
+  }
+
+  if (error) {
+     return (
+       <div className="flex h-[calc(100vh-200px)] flex-col items-center justify-center space-y-4 text-center">
+         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-destructive/10">
+           <Youtube className="h-12 w-12 text-destructive" />
+         </div>
+         <div className="space-y-2">
+           <h3 className="text-lg font-medium text-foreground">
+             Gagal Memuat Video
+           </h3>
+           <p className="max-w-xs text-sm text-muted-foreground">
+             {error}
+           </p>
+           {onRetry && (
+            <Button onClick={onRetry} variant="outline">Coba Lagi</Button>
+           )}
+         </div>
+       </div>
+     );
   }
 
   if (videos && videos.length > 0) {
@@ -64,7 +90,7 @@ export default function VideoGridDynamic({
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] flex-col items-center justify-center space-y-4 text-center">
+    <div className="flex h-[calc(100vh-200px)] flex-col items-center justify-center space-y-4 text-center">
       <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
         <Youtube className="h-12 w-12 text-muted-foreground" />
       </div>
@@ -73,7 +99,7 @@ export default function VideoGridDynamic({
           Video tidak ditemukan
         </h3>
         <p className="max-w-xs text-sm text-muted-foreground">
-          Kunci API YouTube mungkin hilang atau kuotanya habis. Coba cari dengan kata kunci lain.
+          Coba cari dengan kata kunci lain atau periksa kunci API YouTube Anda.
         </p>
       </div>
     </div>

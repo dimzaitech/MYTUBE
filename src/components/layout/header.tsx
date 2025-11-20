@@ -9,7 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Input } from '../ui/input';
 
 export default function Header() {
-  const { queue, selectedVideo, setSelectedVideo } = useQueue();
+  const { selectedVideo, setSelectedVideo } = useQueue();
   const [castState, setCastState] = useState('NO_DEVICES_AVAILABLE');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const router = useRouter();
@@ -41,6 +41,9 @@ export default function Header() {
     } else {
       router.push('/');
     }
+     if (isSearchOpen) {
+      setIsSearchOpen(false);
+    }
   };
 
   const toggleSearch = () => {
@@ -49,18 +52,18 @@ export default function Header() {
 
   if (selectedVideo) {
     return (
-       <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-3 md:h-[56px] md:px-4 player-header">
+       <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-3 md:h-[56px] md:px-4">
         <div className='flex items-center gap-2'>
             <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handleBack} title="Kembali">
                 <ArrowLeft className="h-5 w-5" />
                 <span className="sr-only">Kembali</span>
             </Button>
             <Link href="/" className="flex items-center gap-2 font-semibold">
-                <Youtube className="h-6 w-6 text-red-600 md:h-7 md:w-7" />
+                <Youtube className="h-6 w-6 text-primary md:h-7 md:w-7" />
                 <span className="hidden text-lg font-semibold md:block md:text-xl">MyTUBE</span>
             </Link>
         </div>
-         <div className="flex items-center gap-1 md:gap-2 header-actions">
+         <div className="flex items-center gap-1 md:gap-2">
            {castState !== 'NO_DEVICES_AVAILABLE' && (
              <Button
                variant="ghost"
@@ -88,12 +91,12 @@ export default function Header() {
     <header className="fixed top-0 left-0 z-30 flex h-12 w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-3 md:h-[56px] md:px-4">
       <div className="flex items-center gap-2">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Youtube className="h-6 w-6 text-red-600 md:h-7 md:w-7" />
+          <Youtube className="h-6 w-6 text-primary md:h-7 md:w-7" />
           <span className="text-lg font-semibold md:text-xl">MyTUBE</span>
         </Link>
       </div>
 
-      <div className="flex-1 max-w-md mx-4 hidden md:block">
+      <div className="hidden flex-1 max-w-md mx-4 md:block">
         <form onSubmit={handleSearch}>
             <div className="relative">
                 <Input name="q" placeholder="Cari..." className="bg-secondary pr-10" defaultValue={searchQuery} />
