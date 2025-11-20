@@ -33,6 +33,8 @@ interface VideoGridDynamicProps {
   onVideoClick: (video: FormattedVideo) => void;
   error?: string | null;
   onRetry?: () => void;
+  isSearching?: boolean;
+  searchQuery?: string | null;
 }
 
 export default function VideoGridDynamic({
@@ -41,7 +43,9 @@ export default function VideoGridDynamic({
   videos,
   onVideoClick,
   error,
-  onRetry
+  onRetry,
+  isSearching = false,
+  searchQuery = '',
 }: VideoGridDynamicProps) {
   if (loading) {
     return (
@@ -96,7 +100,7 @@ export default function VideoGridDynamic({
       </div>
       <div className="space-y-1">
         <h3 className="text-lg font-medium text-foreground">
-          Video tidak ditemukan
+          {isSearching ? `Tidak ada hasil untuk "${searchQuery}"` : "Video tidak ditemukan"}
         </h3>
         <p className="max-w-xs text-sm text-muted-foreground">
           Coba cari dengan kata kunci lain atau periksa kunci API YouTube Anda.

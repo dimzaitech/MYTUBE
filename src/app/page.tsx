@@ -73,7 +73,6 @@ export default function Home() {
   }, [searchQuery]);
 
   const handleCategorySelect = (category: string) => {
-    // Jika sedang dalam mode pencarian, kembali ke halaman utama untuk menghapus query
     if (searchQuery) {
       router.push('/');
     }
@@ -202,7 +201,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className={`px-4 ${!searchQuery ? 'mt-[112px]' : 'mt-[70px]'}`}>
+      <div className={`px-4 pt-16 ${!searchQuery ? 'md:pt-28' : 'md:pt-16'}`}>
         {searchQuery && (
           <div className='py-4 text-lg text-muted-foreground'>
             Hasil pencarian untuk: <span className='font-semibold text-foreground'>"{searchQuery}"</span>
@@ -215,6 +214,8 @@ export default function Home() {
           onVideoClick={handleVideoClick}
           error={error}
           onRetry={() => fetchVideos('', true)}
+          isSearching={!!searchQuery}
+          searchQuery={searchQuery}
         />
         {nextPageToken && !loading && !error && (
           <div className="my-8 text-center">

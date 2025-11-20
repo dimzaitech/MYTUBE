@@ -1,5 +1,5 @@
 'use client';
-import { Search, Youtube, Settings, ArrowLeft, X } from 'lucide-react';
+import { Search, Youtube, Settings, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useQueue } from '@/context/QueueContext';
@@ -67,14 +67,14 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className="hidden flex-1 max-w-md mx-4 md:block">
-        <form onSubmit={handleSearch}>
+      <div className="hidden flex-1 mx-auto max-w-lg md:block">
+        <form onSubmit={handleSearch} className="relative">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               name="q"
               placeholder="Cari..."
-              className="bg-secondary pl-10 pr-10"
+              className="bg-secondary pl-10 pr-10 rounded-full"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
             />
@@ -89,15 +89,15 @@ export default function Header() {
                 <X className="h-5 w-5 text-muted-foreground" />
               </Button>
             )}
-            <Button
-              type="submit"
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-            >
-              <Search className="h-5 w-5 text-muted-foreground" />
-            </Button>
           </div>
+          <Button
+            type="submit"
+            variant="ghost"
+            size="icon"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 bg-accent rounded-r-full hover:bg-accent/80"
+          >
+            <Search className="h-5 w-5 text-foreground" />
+          </Button>
         </form>
       </div>
 
@@ -134,7 +134,7 @@ export default function Header() {
 
       {isSearchOpen && (
         <div className="absolute top-full left-0 w-full bg-background p-2 border-b md:hidden">
-          <form onSubmit={handleSearch}>
+          <form onSubmit={handleSearch} className="relative">
             <div className="relative">
               <Input
                 name="q"
