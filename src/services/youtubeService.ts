@@ -38,6 +38,7 @@ type YouTubeVideoItem = {
 type FetchResult = {
   videos: FormattedVideo[];
   nextPageToken?: string;
+  error?: string;
 };
 
 function formatViews(views?: string): string {
@@ -100,31 +101,30 @@ function formatVideos(
   }));
 }
 
-async function fetchWithApiKeyRotation<T extends { items: any[], nextPageToken?: string }>(
+async function fetchWithApiKeyRotation<T extends { items: any[], nextPageToken?: string, error?: any }>(
   url: string,
   endpoint: 'search' | 'videos' | 'channels'
 ): Promise<T> {
-  const maxRetries = apiKeyManager.keys.length;
+  const maxRetries = apiKeyManager.keys.length > 0 ? apiKeyManager.keys.length : 1;
   let attempt = 0;
 
   while (attempt < maxRetries) {
     const currentKey = apiKeyManager.getCurrentKey();
     if (!currentKey) {
-      console.warn('YouTube API key is not set.');
-      return { items: [] } as T;
+      throw new Error('Tidak ada kunci API YouTube yang valid. Mohon tambahkan di file .env.');
     }
 
     try {
       const fullUrl = `${url}&key=${currentKey}`;
       const response = await fetch(fullUrl);
+      const data = await response.json();
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw { ...errorData, status: response.status };
+        throw { data: data, status: response.status };
       }
 
       apiKeyManager.useKey(endpoint);
-      return await response.json();
+      return data;
     } catch (error: any) {
       console.error(
         `API request with key ${
@@ -132,17 +132,22 @@ async function fetchWithApiKeyRotation<T extends { items: any[], nextPageToken?:
         } failed:`,
         error
       );
+      
+      const errorMessage = error?.data?.error?.message || 'Terjadi kesalahan pada API YouTube.';
+      
       attempt++;
       apiKeyManager.markFailed();
+      
       if (attempt >= maxRetries) {
-        throw new Error(`API request failed after ${maxRetries} retries.`);
+        throw new Error(errorMessage);
       }
       console.log(`Retrying request... (${attempt}/${maxRetries})`);
     }
   }
 
-  throw new Error(`API request failed after ${maxRetries} retries.`);
+  throw new Error(`Permintaan API gagal setelah ${maxRetries} kali percobaan.`);
 }
+
 
 async function fetchChannelAvatars(
   channelIds: string[]
@@ -190,19 +195,19 @@ export async function getTrendingVideos(
     );
     const videos = await processVideos(data.items);
     return { videos, nextPageToken: data.nextPageToken };
-  } catch (error) {
-    console.error('Error fetching trending videos:', error);
-    return { videos: [] };
+  } catch (error: any) {
+    return { videos: [], error: error.message };
   }
 }
 
 async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
+  if (!videoIds) return [];
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&id=${videoIds}`,
       'videos'
     );
-    return data.items;
+    return data.items || [];
   } catch (error) {
     console.error('Error fetching video details:', error);
     return [];
@@ -216,11 +221,11 @@ export async function searchVideos(
 ): Promise<FetchResult> {
   try {
     const searchData: any = await fetchWithApiKeyRotation(
-      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${query}&type=video&regionCode=ID&pageToken=${pageToken}`,
+      `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(query)}&type=video&regionCode=ID&pageToken=${pageToken}`,
       'search'
     );
 
-    const videoIds = searchData.items
+    const videoIds = (searchData.items || [])
       .map((item: YouTubeVideoItem) =>
         typeof item.id === 'object' ? item.id.videoId : item.id
       )
@@ -231,22 +236,30 @@ export async function searchVideos(
     const videoDetails = await getVideoDetails(videoIds);
 
     const searchResultsMap = new Map(
-      searchData.items.map((item: any) => [item.id.videoId, item.snippet])
+      (searchData.items || []).map((item: any) => [item.id.videoId, item.snippet])
     );
+    
+    // Urutkan videoDetails berdasarkan urutan dari searchData
+    const sortedVideoDetails = videoDetails.sort((a, b) => {
+      const aIndex = (searchData.items || []).findIndex((item: any) => item.id.videoId === a.id);
+      const bIndex = (searchData.items || []).findIndex((item: any) => item.id.videoId === b.id);
+      return aIndex - bIndex;
+    });
 
-    const mergedDetails = videoDetails.map((detail) => {
+    const mergedDetails = sortedVideoDetails.map((detail) => {
       const searchSnippet = searchResultsMap.get(detail.id as string);
       if (searchSnippet) {
-        detail.snippet = { ...detail.snippet, ...searchSnippet };
+        // Gabungkan snippet dari search (untuk publishedAt, dll) dan dari videos (untuk statistik)
+        // snippet dari videos (detail) lebih diutamakan jika ada konflik
+         detail.snippet = { ...searchSnippet, ...detail.snippet };
       }
       return detail;
     });
 
     const videos = await processVideos(mergedDetails);
     return { videos, nextPageToken: searchData.nextPageToken };
-  } catch (error) {
-    console.error('Error searching videos:', error);
-    return { videos: [] };
+  } catch (error: any) {
+    return { videos: [], error: error.message };
   }
 }
 
