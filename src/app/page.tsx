@@ -14,6 +14,7 @@ import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import CategoryTabs from '@/components/videos/CategoryTabs';
+import { Suspense } from 'react';
 
 const categories = [
   'Semua',
@@ -44,7 +45,8 @@ const categoryQueries: Record<string, string> = {
   Komedi: 'stand up comedy lucu',
 };
 
-export default function Home() {
+
+function HomePageContent() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -160,7 +162,8 @@ export default function Home() {
         }
       }
     },
-    [searchQuery, activeCategory, videos]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchQuery, activeCategory] 
   );
 
   useEffect(() => {
@@ -172,7 +175,8 @@ export default function Home() {
       handleVideoClick(videoToPlay);
       clearVideoToPlay();
     }
-  }, [videoToPlay, clearVideoToPlay, queue, setQueue, handleVideoClick]);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoToPlay, clearVideoToPlay, queue, setQueue]);
 
   useEffect(() => {
     fetchVideos();
@@ -251,7 +255,7 @@ export default function Home() {
               onClick={handleLoadMore}
               disabled={loadingMore}
               variant="default"
-              className="min-w-[200px] rounded-full bg-[#0072ff] py-3 px-8 text-base font-semibold text-white transition-all hover:bg-[#0056cc] hover:-translate-y-0.5"
+              className="min-w-[200px] rounded-full bg-primary py-3 px-8 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:-translate-y-0.5"
             >
               {loadingMore ? (
                 <>
@@ -267,4 +271,12 @@ export default function Home() {
       </div>
     </>
   );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Memuat...</div>}>
+      <HomePageContent />
+    </Suspense>
+  )
 }

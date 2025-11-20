@@ -9,18 +9,6 @@ import { cn } from '@/lib/utils';
 export const metadata: Metadata = {
   title: 'MyTUBE',
   description: 'A YouTube clone with Background Play',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'MyTUBE',
-  },
-  formatDetection: {
-    telephone: false,
-    date: false,
-    email: false,
-    address: false,
-  },
 };
 
 export const viewport: Viewport = {
@@ -40,7 +28,6 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
       <head>
-        <meta name="HandheldFriendly" content="true" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -64,22 +51,9 @@ export default function RootLayout({
           <Suspense fallback={<div className="h-14 bg-background border-b border-border"></div>}>
             <Header />
           </Suspense>
-          <Suspense fallback={<div>Memuat...</div>}>{children}</Suspense>
+          <main>{children}</main>
           <Toaster />
         </QueueProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function(error) {
-                    console.log('ServiceWorker registration failed: ', error);
-                  });
-                });
-              }
-            `,
-          }}
-        />
       </body>
     </html>
   );

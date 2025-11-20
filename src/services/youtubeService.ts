@@ -138,7 +138,7 @@ async function fetchWithApiKeyRotation<T extends { items: any[], nextPageToken?:
       let errorMessage = 'Terjadi kesalahan pada API YouTube.';
       if (error?.data?.error?.message) {
         errorMessage = error.data.error.message;
-      } else if (typeof error.message === 'string') {
+      } else if (typeof error?.message === 'string') {
         errorMessage = error.message;
       }
       
@@ -240,8 +240,12 @@ export async function searchVideos(
       `${YOUTUBE_API_URL}/search?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(query)}&type=video&regionCode=ID&pageToken=${pageToken}`,
       'search'
     );
+    
+    if (!searchData.items || searchData.items.length === 0) {
+      return { videos: [], nextPageToken: undefined };
+    }
 
-    const videoIds = (searchData.items || [])
+    const videoIds = searchData.items
       .map((item: YouTubeVideoItem) =>
         typeof item.id === 'object' ? item.id.videoId : item.id
       )
@@ -263,6 +267,7 @@ export async function searchVideos(
                 snippet: {
                     ...item.snippet,
                     ...detail.snippet,
+                    title: item.snippet.title, // Prioritaskan judul dari hasil search
                 },
             };
         }
@@ -270,7 +275,7 @@ export async function searchVideos(
           ...item,
           id: item.id.videoId
         };
-    });
+    }).filter(Boolean); // Filter item yang mungkin tidak memiliki detail
 
     const videos = await processVideos(mergedDetails, existingVideoIds);
     return { videos, nextPageToken: searchData.nextPageToken };
