@@ -61,7 +61,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueueProvider>
-          <Header />
+          <Suspense fallback={<div className="h-14 bg-background border-b border-border"></div>}>
+            <Header />
+          </Suspense>
           <Suspense fallback={<div>Memuat...</div>}>{children}</Suspense>
           <Toaster />
         </QueueProvider>

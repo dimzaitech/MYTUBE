@@ -120,6 +120,7 @@ async function fetchWithApiKeyRotation<T extends { items: any[], nextPageToken?:
       const data = await response.json();
 
       if (!response.ok) {
+        // Lemparkan error dengan data agar bisa ditangkap di blok catch
         throw { data: data, status: response.status };
       }
 
@@ -132,8 +133,14 @@ async function fetchWithApiKeyRotation<T extends { items: any[], nextPageToken?:
         } failed:`,
         error
       );
-      
-      const errorMessage = error?.data?.error?.message || 'Terjadi kesalahan pada API YouTube.';
+
+      // Coba ekstrak pesan error dari berbagai kemungkinan format
+      let errorMessage = 'Terjadi kesalahan pada API YouTube.';
+      if (error?.data?.error?.message) {
+        errorMessage = error.data.error.message;
+      } else if (typeof error.message === 'string') {
+        errorMessage = error.message;
+      }
       
       attempt++;
       apiKeyManager.markFailed();
@@ -145,6 +152,7 @@ async function fetchWithApiKeyRotation<T extends { items: any[], nextPageToken?:
     }
   }
 
+  // Baris ini seharusnya tidak akan pernah tercapai, tapi untuk keamanan
   throw new Error(`Permintaan API gagal setelah ${maxRetries} kali percobaan.`);
 }
 
@@ -247,16 +255,21 @@ export async function searchVideos(
     const mergedDetails = (searchData.items || []).map((item: any) => {
         const detail = videoDetailsMap.get(item.id.videoId);
         if (detail) {
+            // Gabungkan detail tanpa menimpa snippet dari pencarian
             return {
                 ...item,
                 ...detail,
+                id: item.id.videoId, // Pastikan id adalah string
                 snippet: {
                     ...item.snippet,
                     ...detail.snippet,
                 },
             };
         }
-        return item;
+        return {
+          ...item,
+          id: item.id.videoId
+        };
     });
 
     const videos = await processVideos(mergedDetails, existingVideoIds);
