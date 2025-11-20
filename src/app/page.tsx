@@ -13,6 +13,7 @@ import { useQueue } from '@/context/QueueContext';
 import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import CategoryTabs from '@/components/videos/CategoryTabs';
 
 const categories = [
   'Semua',
@@ -62,7 +63,6 @@ export default function Home() {
     setSelectedVideo,
   } = useQueue();
   
-  // Baca `q` dari URL. Jika ada, set kategori ke 'Semua'
   const searchQuery = searchParams.get('q');
   
   useEffect(() => {
@@ -73,7 +73,6 @@ export default function Home() {
 
 
   const handleCategorySelect = (category: string) => {
-    // Jika sedang dalam pencarian, hapus query 'q' dari URL
     if (searchQuery) {
       router.push('/');
     }
@@ -113,7 +112,7 @@ export default function Home() {
     const isInitialLoad = pageToken === '';
     if (isInitialLoad) {
       setLoading(true);
-      setVideos([]); // Kosongkan video saat load awal
+      setVideos([]); 
     } else {
       setLoadingMore(true);
     }
@@ -186,25 +185,11 @@ export default function Home() {
 
   return (
     <>
-      <div className="fixed top-12 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:top-[56px] md:py-3">
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="inline-flex gap-2 px-3 md:gap-3 md:px-4">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => handleCategorySelect(category)}
-                className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors md:px-4 md:py-2 ${
-                  activeCategory === category
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <CategoryTabs
+        categories={categories}
+        selectedCategory={activeCategory}
+        onCategorySelect={handleCategorySelect}
+      />
 
       <div className="mt-[96px] md:mt-[120px]">
         <VideoGridDynamic
