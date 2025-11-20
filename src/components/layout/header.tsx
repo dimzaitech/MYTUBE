@@ -5,10 +5,16 @@ import Link from 'next/link';
 import { useQueue } from '@/context/QueueContext';
 import { useEffect, useState } from 'react';
 import castService from '@/services/castService';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Input } from '../ui/input';
 
 export default function Header() {
-  const { toggleQueue, queue, selectedVideo, setSelectedVideo } = useQueue();
+  const { queue, selectedVideo, setSelectedVideo } = useQueue();
   const [castState, setCastState] = useState('NO_DEVICES_AVAILABLE');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -23,8 +29,24 @@ export default function Header() {
 
   const handleBack = () => {
     setSelectedVideo(null);
+    document.body.classList.remove('no-scroll');
   };
   
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('q') as string;
+    if (query.trim()) {
+      router.push(`/?q=${encodeURIComponent(query)}`);
+    } else {
+      router.push('/');
+    }
+  };
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+  };
+
   if (selectedVideo) {
     return (
        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-3 md:h-[56px] md:px-4 player-header">
@@ -51,10 +73,6 @@ export default function Header() {
                <span className="sr-only">Cast to TV</span>
              </Button>
            )}
-           <Button variant="ghost" size="icon" className="h-9 w-9" title="Cari">
-             <Search className="h-5 w-5" />
-             <span className="sr-only">Search</span>
-           </Button>
            <Button variant="ghost" size="icon" asChild className="h-9 w-9">
              <Link href="/profile" title="Pengaturan & Kuota">
                <Settings className="h-5 w-5" />
@@ -75,6 +93,17 @@ export default function Header() {
         </Link>
       </div>
 
+      <div className="flex-1 max-w-md mx-4 hidden md:block">
+        <form onSubmit={handleSearch}>
+            <div className="relative">
+                <Input name="q" placeholder="Cari..." className="bg-secondary pr-10" defaultValue={searchQuery} />
+                <Button type="submit" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8">
+                    <Search className="h-5 w-5 text-muted-foreground" />
+                </Button>
+            </div>
+        </form>
+      </div>
+
       <div className="flex items-center gap-1 md:gap-2">
         {castState !== 'NO_DEVICES_AVAILABLE' && (
           <Button
@@ -91,21 +120,12 @@ export default function Header() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
-          onClick={toggleQueue}
-          title="Daftar Antrean"
+          className="h-9 w-9 md:hidden"
+          onClick={toggleSearch}
+          title="Cari"
         >
-          <ListMusic className="h-5 w-5" />
-          <span className="sr-only">Daftar Antrean</span>
-          {queue.length > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-xs text-white">
-              {queue.length}
-            </span>
-          )}
-        </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9" title="Cari">
           <Search className="h-5 w-5" />
-          <span className="sr-only">Search</span>
+          <span className="sr-only">Cari</span>
         </Button>
         <Button variant="ghost" size="icon" asChild className="h-9 w-9">
           <Link href="/profile" title="Pengaturan & Kuota">
@@ -114,6 +134,19 @@ export default function Header() {
           </Link>
         </Button>
       </div>
+
+      {isSearchOpen && (
+          <div className="absolute top-full left-0 w-full bg-background p-2 border-b md:hidden">
+              <form onSubmit={handleSearch}>
+                  <div className="relative">
+                      <Input name="q" placeholder="Cari..." className="bg-secondary pr-10" defaultValue={searchQuery} />
+                      <Button type="submit" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8">
+                          <Search className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                  </div>
+              </form>
+          </div>
+      )}
     </header>
   );
 }

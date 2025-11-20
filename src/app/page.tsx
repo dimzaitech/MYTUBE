@@ -51,7 +51,6 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState('Semua');
 
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get('q');
   const router = useRouter();
   const {
     playNextInQueue,
@@ -62,25 +61,23 @@ export default function Home() {
     selectedVideo,
     setSelectedVideo,
   } = useQueue();
-
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const query = formData.get('q') as string;
-    if (query.trim()) {
-      router.push(`/?q=${encodeURIComponent(query)}`);
-    } else {
-      router.push('/');
+  
+  // Baca `q` dari URL. Jika ada, set kategori ke 'Semua'
+  const searchQuery = searchParams.get('q');
+  
+  useEffect(() => {
+    if (searchQuery) {
+      setActiveCategory('Semua');
     }
-  };
+  }, [searchQuery]);
+
 
   const handleCategorySelect = (category: string) => {
+    // Jika sedang dalam pencarian, hapus query 'q' dari URL
     if (searchQuery) {
       router.push('/');
     }
     setActiveCategory(category);
-    setVideos([]);
-    setNextPageToken('');
   };
 
   const handleVideoClick = (video: FormattedVideo) => {
@@ -116,6 +113,7 @@ export default function Home() {
     const isInitialLoad = pageToken === '';
     if (isInitialLoad) {
       setLoading(true);
+      setVideos([]); // Kosongkan video saat load awal
     } else {
       setLoadingMore(true);
     }
@@ -123,10 +121,7 @@ export default function Home() {
     try {
       let result;
       if (searchQuery) {
-        const categoryQuery =
-          activeCategory !== 'Semua' ? categoryQueries[activeCategory] : '';
-        const finalQuery = `${searchQuery} ${categoryQuery}`.trim();
-        result = await searchVideos(finalQuery, 20, pageToken);
+        result = await searchVideos(searchQuery, 20, pageToken);
       } else if (activeCategory === 'Semua') {
         result = await getTrendingVideos(20, pageToken);
       } else {
