@@ -66,6 +66,7 @@ export default function Home() {
   const searchQuery = searchParams.get('q');
   
   useEffect(() => {
+    // Reset category to "Semua" if there is a search query
     if (searchQuery) {
       setActiveCategory('Semua');
     }
@@ -73,6 +74,7 @@ export default function Home() {
 
 
   const handleCategorySelect = (category: string) => {
+    // If a search query exists, clear it by navigating to the home page
     if (searchQuery) {
       router.push('/');
     }
@@ -91,6 +93,7 @@ export default function Home() {
       return;
     }
 
+    // If queue is empty, try to play the next video from the current grid view
     if (selectedVideo) {
       const currentIndex = videos.findIndex((v) => v.id === selectedVideo.id);
       if (currentIndex !== -1 && currentIndex < videos.length - 1) {
@@ -100,6 +103,7 @@ export default function Home() {
       }
     }
 
+    // If no more videos, close the player
     handleClosePlayer();
   };
 
@@ -112,7 +116,7 @@ export default function Home() {
     const isInitialLoad = pageToken === '';
     if (isInitialLoad) {
       setLoading(true);
-      setVideos([]); 
+      setVideos([]); // Clear previous videos on a new search/category select
     } else {
       setLoadingMore(true);
     }
@@ -146,8 +150,10 @@ export default function Home() {
 
   useEffect(() => {
     if (videoToPlay) {
+      // If a video from the queue is selected to play
       const videoIndexInQueue = queue.findIndex((v) => v.id === videoToPlay.id);
       if (videoIndexInQueue !== -1) {
+        // Fast-forward the queue to the played video
         setQueue((prev) => prev.slice(videoIndexInQueue));
       }
       handleVideoClick(videoToPlay);
