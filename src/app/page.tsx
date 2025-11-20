@@ -191,20 +191,35 @@ export default function Home() {
 
   return (
     <>
-      {!searchQuery && (
-        <div className="fixed top-14 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:py-3">
-          <CategoryTabs
-            categories={categories}
-            selectedCategory={activeCategory}
-            onCategorySelect={handleCategorySelect}
-          />
-        </div>
-      )}
+      <div
+        className={`fixed top-14 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:py-3 ${
+          searchQuery ? 'hidden' : 'block'
+        }`}
+      >
+        <CategoryTabs
+          categories={categories}
+          selectedCategory={activeCategory}
+          onCategorySelect={handleCategorySelect}
+        />
+      </div>
 
       <div className={`px-4 pt-16 ${!searchQuery ? 'md:pt-28' : 'md:pt-16'}`}>
         {searchQuery && (
-          <div className='py-4 text-lg text-muted-foreground'>
-            Hasil pencarian untuk: <span className='font-semibold text-foreground'>"{searchQuery}"</span>
+          <div className="mb-4 flex flex-col items-start gap-2 rounded-lg bg-secondary p-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-lg text-muted-foreground">
+              Hasil pencarian untuk:{' '}
+              <span className="font-semibold text-foreground">
+                "{searchQuery}"
+              </span>
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/')}
+              className="gap-2 text-muted-foreground hover:bg-accent"
+            >
+              Hapus pencarian
+            </Button>
           </div>
         )}
         <VideoGridDynamic
@@ -213,7 +228,7 @@ export default function Home() {
           videos={videos}
           onVideoClick={handleVideoClick}
           error={error}
-          onRetry={() => fetchVideos('', true)}
+  onRetry={() => fetchVideos('', true)}
           isSearching={!!searchQuery}
           searchQuery={searchQuery}
         />
