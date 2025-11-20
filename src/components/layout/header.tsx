@@ -9,7 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
 
-export default function Header() {
+function HeaderContent() {
   const { selectedVideo } = useQueue();
   const [castState, setCastState] = useState('NO_DEVICES_AVAILABLE');
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -61,7 +61,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-auto w-full flex-col border-b border-border bg-background px-3 py-3 md:h-14 md:flex-row md:items-center md:justify-between md:px-4 md:py-2">
-      <div className="flex w-full items-center justify-between">
+      <div className="flex w-full items-center justify-between md:order-2 md:w-auto">
         {/* Logo and Title */}
         <div className="flex items-center gap-2 md:order-1">
           <Link href="/" className="flex items-center gap-2 font-semibold">
@@ -72,7 +72,7 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Mobile Search Toggle */}
+        {/* Mobile Search & Other Icons */}
         <div className="flex items-center gap-1 md:hidden">
           <Button
             variant="ghost"
@@ -101,6 +101,40 @@ export default function Header() {
             </Link>
           </Button>
         </div>
+        
+        {/* Search Bar - Center on Desktop */}
+        <div className="hidden md:order-2 md:mx-8 md:flex md:flex-1 md:max-w-2xl">
+          <form onSubmit={handleSearch} className="relative flex w-full">
+            <Input
+              name="q"
+              placeholder="Cari..."
+              className="w-full rounded-full bg-secondary py-2 pl-5 pr-20 text-base md:text-sm"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              autoComplete="off"
+            />
+            {inputValue && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-12 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
+                onClick={handleClearSearch}
+              >
+                <X className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            )}
+            <Button
+              type="submit"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-0 h-full w-14 rounded-r-full bg-accent hover:bg-accent/80"
+              title="Cari"
+            >
+              <Search className="h-5 w-5 text-foreground" />
+            </Button>
+          </form>
+        </div>
 
         {/* Desktop Icons */}
         <div className="hidden items-center gap-1 md:order-3 md:flex">
@@ -125,10 +159,10 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Search Bar */}
+      {/* Mobile Search Bar */}
       <div
         className={cn(
-          'mt-3 w-full md:order-2 md:mx-4 md:mt-0 md:flex md:max-w-2xl md:flex-1',
+          'mt-3 w-full md:hidden',
           isMobileSearchOpen ? 'block' : 'hidden'
         )}
       >
@@ -136,7 +170,7 @@ export default function Header() {
           <Input
             name="q"
             placeholder="Cari..."
-            className="w-full rounded-full bg-secondary py-2 pl-4 pr-10 text-base md:text-sm"
+            className="w-full rounded-full bg-secondary py-2 pl-5 pr-20 text-base"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             autoComplete="off"
@@ -146,7 +180,7 @@ export default function Header() {
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-10 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
+              className="absolute right-12 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
               onClick={handleClearSearch}
             >
               <X className="h-5 w-5 text-muted-foreground" />
@@ -156,7 +190,8 @@ export default function Header() {
             type="submit"
             variant="ghost"
             size="icon"
-            className="absolute right-0 top-0 h-full w-12 rounded-r-full bg-accent hover:bg-accent/80"
+            className="absolute right-0 top-0 h-full w-14 rounded-r-full bg-accent hover:bg-accent/80"
+            title="Cari"
           >
             <Search className="h-5 w-5 text-foreground" />
           </Button>
@@ -164,4 +199,9 @@ export default function Header() {
       </div>
     </header>
   );
+}
+
+
+export default function Header() {
+  return <HeaderContent />
 }

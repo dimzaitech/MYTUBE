@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import {
   getTrendingVideos,
   searchVideos,
@@ -14,7 +14,6 @@ import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import CategoryTabs from '@/components/videos/CategoryTabs';
-import { Suspense } from 'react';
 
 const categories = [
   'Semua',
@@ -68,11 +67,76 @@ function HomePageContent() {
 
   const searchQuery = searchParams.get('q');
 
+  const fetchVideos = useCallback(
+    async (isInitialLoad = true) => {
+      if (isInitialLoad) {
+        setLoading(true);
+        setVideos([]);
+        setError(null);
+      } else {
+        setLoadingMore(true);
+      }
+
+      try {
+        const pageToken = isInitialLoad ? '' : nextPageToken;
+        const existingVideoIds = new Set(
+          isInitialLoad ? [] : videos.map((v) => v.id)
+        );
+        let result;
+
+        if (searchQuery) {
+          result = await searchVideos(searchQuery, 20, pageToken, existingVideoIds);
+        } else if (activeCategory === 'Semua') {
+          result = await getTrendingVideos(20, pageToken, existingVideoIds);
+        } else {
+          const query = categoryQueries[activeCategory];
+          result = await searchVideos(query, 20, pageToken, existingVideoIds);
+        }
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        
+        setVideos((prev) =>
+          isInitialLoad ? result.videos : [...prev, ...result.videos]
+        );
+        setNextPageToken(result.nextPageToken);
+
+      } catch (error: any) {
+        console.error('Failed to fetch videos:', error);
+        setError(error.message || 'Gagal mengambil data dari YouTube API.');
+        if (isInitialLoad) setVideos([]);
+      } finally {
+        if (isInitialLoad) {
+          setLoading(false);
+        } else {
+          setLoadingMore(false);
+        }
+      }
+    },
+    [searchQuery, activeCategory, nextPageToken, videos]
+  );
+  
   useEffect(() => {
     if (searchQuery) {
       setActiveCategory('Semua');
     }
-  }, [searchQuery]);
+    fetchVideos(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, activeCategory]);
+
+  useEffect(() => {
+    if (videoToPlay) {
+      const videoIndexInQueue = queue.findIndex((v) => v.id === videoToPlay.id);
+      if (videoIndexInQueue !== -1) {
+        setQueue((prev) => prev.slice(videoIndexInQueue));
+      }
+      handleVideoClick(videoToPlay);
+      clearVideoToPlay();
+    }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoToPlay, clearVideoToPlay, queue, setQueue]);
+
 
   const handleCategorySelect = (category: string) => {
     if (searchQuery) {
@@ -85,7 +149,7 @@ function HomePageContent() {
     setSelectedVideo(video);
     document.body.classList.add('no-scroll');
   };
-
+  
   const playNextVideo = useCallback(() => {
     const nextInQueue = playNextInQueue();
     if (nextInQueue) {
@@ -111,81 +175,9 @@ function HomePageContent() {
     document.body.classList.remove('no-scroll');
   };
 
-  const fetchVideos = useCallback(
-    async (pageToken = '') => {
-      const isInitialLoad = pageToken === '';
-      if (isInitialLoad) {
-        setLoading(true);
-        setVideos([]);
-        setError(null);
-      } else {
-        setLoadingMore(true);
-      }
-
-      try {
-        let result;
-        const existingVideoIds = new Set(
-          isInitialLoad ? [] : videos.map((v) => v.id)
-        );
-
-        if (searchQuery) {
-          result = await searchVideos(
-            searchQuery,
-            20,
-            pageToken,
-            existingVideoIds
-          );
-        } else if (activeCategory === 'Semua') {
-          result = await getTrendingVideos(20, pageToken, existingVideoIds);
-        } else {
-          const query = categoryQueries[activeCategory];
-          result = await searchVideos(query, 20, pageToken, existingVideoIds);
-        }
-
-        if (result.error) {
-          throw new Error(result.error);
-        }
-
-        setVideos((prev) =>
-          isInitialLoad ? result.videos : [...prev, ...result.videos]
-        );
-        setNextPageToken(result.nextPageToken);
-      } catch (error: any) {
-        console.error('Failed to fetch videos:', error);
-        setError(error.message || 'Gagal mengambil data dari YouTube API.');
-        if (isInitialLoad) setVideos([]);
-      } finally {
-        if (isInitialLoad) {
-          setLoading(false);
-        } else {
-          setLoadingMore(false);
-        }
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchQuery, activeCategory] 
-  );
-
-  useEffect(() => {
-    if (videoToPlay) {
-      const videoIndexInQueue = queue.findIndex((v) => v.id === videoToPlay.id);
-      if (videoIndexInQueue !== -1) {
-        setQueue((prev) => prev.slice(videoIndexInQueue));
-      }
-      handleVideoClick(videoToPlay);
-      clearVideoToPlay();
-    }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoToPlay, clearVideoToPlay, queue, setQueue]);
-
-  useEffect(() => {
-    fetchVideos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, activeCategory]);
-
   const handleLoadMore = () => {
     if (nextPageToken && !loadingMore) {
-      fetchVideos(nextPageToken);
+      fetchVideos(false);
     }
   };
 
@@ -245,11 +237,11 @@ function HomePageContent() {
           videos={videos}
           onVideoClick={handleVideoClick}
           error={error}
-          onRetry={fetchVideos}
+          onRetry={() => fetchVideos(true)}
           isSearching={!!searchQuery}
           searchQuery={searchQuery}
         />
-        {nextPageToken && !loading && !error && (
+        {nextPageToken && !loading && !error && videos.length > 0 && (
           <div className="my-8 text-center">
             <Button
               onClick={handleLoadMore}
@@ -259,7 +251,7 @@ function HomePageContent() {
             >
               {loadingMore ? (
                 <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   Memuat...
                 </>
               ) : (
@@ -275,7 +267,7 @@ function HomePageContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div>Memuat...</div>}>
+    <Suspense fallback={<div className="p-8 text-center">Memuat...</div>}>
       <HomePageContent />
     </Suspense>
   )
