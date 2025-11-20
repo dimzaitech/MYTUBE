@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -8,18 +9,18 @@ export async function POST(request: Request) {
     const correctPasswords = ['admin', 'password', '123', 'carl', 'rahasia'];
 
     let isAuthenticated = false;
-    if (profilePassword && password === profilePassword) {
-      isAuthenticated = true;
-    } else if (!profilePassword && correctPasswords.includes(password.toLowerCase())) {
-      // Fallback to hardcoded list only if PROFILE_PASSWORD is not set
-      isAuthenticated = true;
-    } else if (profilePassword && !isAuthenticated) {
-      // If PROFILE_PASSWORD is set but didn't match, check hardcoded list as secondary
-       if (correctPasswords.includes(password.toLowerCase())) {
-           isAuthenticated = true;
-       }
-    }
 
+    // Prioritas utama: Periksa variabel environment
+    if (profilePassword) {
+      if (password === profilePassword) {
+        isAuthenticated = true;
+      }
+    } else {
+      // Fallback ke daftar password hardcoded jika var env tidak di-set
+      if (correctPasswords.includes(password.toLowerCase())) {
+        isAuthenticated = true;
+      }
+    }
 
     if (isAuthenticated) {
       return NextResponse.json({ success: true });
