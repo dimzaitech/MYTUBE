@@ -73,6 +73,7 @@ export default function Home() {
   }, [searchQuery]);
 
   const handleCategorySelect = (category: string) => {
+    // Jika sedang dalam mode pencarian, kembali ke halaman utama untuk menghapus query
     if (searchQuery) {
       router.push('/');
     }
@@ -174,7 +175,7 @@ export default function Home() {
 
   if (selectedVideo) {
     return (
-      <div className="mx-auto flex max-w-[1700px] flex-col gap-6 px-4 pt-4 md:flex-row md:pt-6">
+      <div className="mx-auto flex max-w-[1700px] flex-col gap-6 px-4 pt-4 lg:flex-row lg:pt-6">
         <div className="flex-1 lg:w-[calc(100%-420px)]">
           <VideoPlayer
             video={selectedVideo}
@@ -191,16 +192,22 @@ export default function Home() {
 
   return (
     <>
-      <div className="fixed top-14 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:py-3">
-         <CategoryTabs
-          categories={categories}
-          selectedCategory={activeCategory}
-          onCategorySelect={handleCategorySelect}
-        />
-      </div>
+      {!searchQuery && (
+        <div className="fixed top-14 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:py-3">
+          <CategoryTabs
+            categories={categories}
+            selectedCategory={activeCategory}
+            onCategorySelect={handleCategorySelect}
+          />
+        </div>
+      )}
 
-
-      <div className="mt-[112px] px-4">
+      <div className={`px-4 ${!searchQuery ? 'mt-[112px]' : 'mt-[70px]'}`}>
+        {searchQuery && (
+          <div className='py-4 text-lg text-muted-foreground'>
+            Hasil pencarian untuk: <span className='font-semibold text-foreground'>"{searchQuery}"</span>
+          </div>
+        )}
         <VideoGridDynamic
           loading={loading}
           loadingMore={loadingMore}
