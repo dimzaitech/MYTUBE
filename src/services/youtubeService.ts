@@ -242,23 +242,21 @@ export async function searchVideos(
     if (!videoIds) return { videos: [], nextPageToken: undefined };
 
     const videoDetails = await getVideoDetails(videoIds);
+    const videoDetailsMap = new Map(videoDetails.map(video => [video.id, video]));
 
-    const searchResultsMap = new Map(
-      (searchData.items || []).map((item: any) => [item.id.videoId, item.snippet])
-    );
-    
-    const sortedVideoDetails = videoDetails.sort((a, b) => {
-      const aIndex = (searchData.items || []).findIndex((item: any) => item.id.videoId === a.id);
-      const bIndex = (searchData.items || []).findIndex((item: any) => item.id.videoId === b.id);
-      return aIndex - bIndex;
-    });
-
-    const mergedDetails = sortedVideoDetails.map((detail) => {
-      const searchSnippet = searchResultsMap.get(detail.id as string);
-      if (searchSnippet) {
-         detail.snippet = { ...searchSnippet, ...detail.snippet };
-      }
-      return detail;
+    const mergedDetails = (searchData.items || []).map((item: any) => {
+        const detail = videoDetailsMap.get(item.id.videoId);
+        if (detail) {
+            return {
+                ...item,
+                ...detail,
+                snippet: {
+                    ...item.snippet,
+                    ...detail.snippet,
+                },
+            };
+        }
+        return item;
     });
 
     const videos = await processVideos(mergedDetails, existingVideoIds);
