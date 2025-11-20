@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   getTrendingVideos,
   searchVideos,
@@ -50,6 +50,7 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextPageToken, setNextPageToken] = useState<string | undefined>('');
   const [activeCategory, setActiveCategory] = useState('Semua');
+  const [error, setError] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -62,19 +63,16 @@ export default function Home() {
     selectedVideo,
     setSelectedVideo,
   } = useQueue();
-  
+
   const searchQuery = searchParams.get('q');
-  
+
   useEffect(() => {
-    // Reset category to "Semua" if there is a search query
     if (searchQuery) {
       setActiveCategory('Semua');
     }
   }, [searchQuery]);
 
-
   const handleCategorySelect = (category: string) => {
-    // If a search query exists, clear it by navigating to the home page
     if (searchQuery) {
       router.push('/');
     }
@@ -86,14 +84,13 @@ export default function Home() {
     document.body.classList.add('no-scroll');
   };
 
-  const playNextVideo = () => {
+  const playNextVideo = useCallback(() => {
     const nextInQueue = playNextInQueue();
     if (nextInQueue) {
       setSelectedVideo(nextInQueue);
       return;
     }
 
-    // If queue is empty, try to play the next video from the current grid view
     if (selectedVideo) {
       const currentIndex = videos.findIndex((v) => v.id === selectedVideo.id);
       if (currentIndex !== -1 && currentIndex < videos.length - 1) {
@@ -103,20 +100,21 @@ export default function Home() {
       }
     }
 
-    // If no more videos, close the player
     handleClosePlayer();
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVideo, videos, playNextInQueue]);
 
   const handleClosePlayer = () => {
     setSelectedVideo(null);
     document.body.classList.remove('no-scroll');
   };
 
-  const fetchVideos = async (pageToken = '') => {
+  const fetchVideos = useCallback(async (pageToken = '', isRetry = false) => {
     const isInitialLoad = pageToken === '';
     if (isInitialLoad) {
       setLoading(true);
-      setVideos([]); // Clear previous videos on a new search/category select
+      setVideos([]);
+      setError(null);
     } else {
       setLoadingMore(true);
     }
@@ -131,13 +129,18 @@ export default function Home() {
         const query = categoryQueries[activeCategory];
         result = await searchVideos(query, 20, pageToken);
       }
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
       setVideos((prev) =>
         isInitialLoad ? result.videos : [...prev, ...result.videos]
       );
       setNextPageToken(result.nextPageToken);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch videos:', error);
+      setError(error.message || 'Gagal mengambil data dari YouTube API.');
       if (isInitialLoad) setVideos([]);
     } finally {
       if (isInitialLoad) {
@@ -146,14 +149,12 @@ export default function Home() {
         setLoadingMore(false);
       }
     }
-  };
+  }, [searchQuery, activeCategory]);
 
   useEffect(() => {
     if (videoToPlay) {
-      // If a video from the queue is selected to play
       const videoIndexInQueue = queue.findIndex((v) => v.id === videoToPlay.id);
       if (videoIndexInQueue !== -1) {
-        // Fast-forward the queue to the played video
         setQueue((prev) => prev.slice(videoIndexInQueue));
       }
       handleVideoClick(videoToPlay);
@@ -163,8 +164,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchVideos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, activeCategory]);
+  }, [fetchVideos]);
 
   const handleLoadMore = () => {
     if (nextPageToken && !loadingMore) {
@@ -174,8 +174,8 @@ export default function Home() {
 
   if (selectedVideo) {
     return (
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 pt-16 lg:flex-row lg:pt-20">
-        <div className="flex-1">
+      <div className="mx-auto flex max-w-[1700px] flex-col gap-6 px-4 pt-4 md:flex-row md:pt-6">
+        <div className="flex-1 lg:w-[calc(100%-420px)]">
           <VideoPlayer
             video={selectedVideo}
             onClose={handleClosePlayer}
@@ -191,26 +191,31 @@ export default function Home() {
 
   return (
     <>
-      <CategoryTabs
-        categories={categories}
-        selectedCategory={activeCategory}
-        onCategorySelect={handleCategorySelect}
-      />
+      <div className="fixed top-14 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:py-3">
+         <CategoryTabs
+          categories={categories}
+          selectedCategory={activeCategory}
+          onCategorySelect={handleCategorySelect}
+        />
+      </div>
 
-      <div className="mt-[96px] md:mt-[120px]">
+
+      <div className="mt-[112px] px-4">
         <VideoGridDynamic
           loading={loading}
           loadingMore={loadingMore}
           videos={videos}
           onVideoClick={handleVideoClick}
+          error={error}
+          onRetry={() => fetchVideos('', true)}
         />
-        {nextPageToken && !loading && (
-          <div className="my-6 text-center">
+        {nextPageToken && !loading && !error && (
+          <div className="my-8 text-center">
             <Button
               onClick={handleLoadMore}
               disabled={loadingMore}
               variant="outline"
-              className="gap-2"
+              className="gap-2 rounded-full"
             >
               {loadingMore ? (
                 <>
