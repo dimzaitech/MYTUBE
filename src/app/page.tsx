@@ -101,7 +101,7 @@ export default function Home() {
     }
 
     handleClosePlayer();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVideo, videos, playNextInQueue]);
 
   const handleClosePlayer = () => {
@@ -109,49 +109,59 @@ export default function Home() {
     document.body.classList.remove('no-scroll');
   };
 
-  const fetchVideos = useCallback(async (pageToken = '', isRetry = false) => {
-    const isInitialLoad = pageToken === '';
-    if (isInitialLoad) {
-      setLoading(true);
-      setVideos([]);
-      setError(null);
-    } else {
-      setLoadingMore(true);
-    }
-
-    try {
-      let result;
-      const existingVideoIds = new Set(videos.map(v => v.id));
-
-      if (searchQuery) {
-        result = await searchVideos(searchQuery, 20, pageToken, existingVideoIds);
-      } else if (activeCategory === 'Semua') {
-        result = await getTrendingVideos(20, pageToken, existingVideoIds);
-      } else {
-        const query = categoryQueries[activeCategory];
-        result = await searchVideos(query, 20, pageToken, existingVideoIds);
-      }
-      
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      setVideos((prev) =>
-        isInitialLoad ? result.videos : [...prev, ...result.videos]
-      );
-      setNextPageToken(result.nextPageToken);
-    } catch (error: any) {
-      console.error('Failed to fetch videos:', error);
-      setError(error.message || 'Gagal mengambil data dari YouTube API.');
-      if (isInitialLoad) setVideos([]);
-    } finally {
+  const fetchVideos = useCallback(
+    async (pageToken = '') => {
+      const isInitialLoad = pageToken === '';
       if (isInitialLoad) {
-        setLoading(false);
+        setLoading(true);
+        setVideos([]);
+        setError(null);
       } else {
-        setLoadingMore(false);
+        setLoadingMore(true);
       }
-    }
-  }, [searchQuery, activeCategory, videos]);
+
+      try {
+        let result;
+        const existingVideoIds = new Set(
+          isInitialLoad ? [] : videos.map((v) => v.id)
+        );
+
+        if (searchQuery) {
+          result = await searchVideos(
+            searchQuery,
+            20,
+            pageToken,
+            existingVideoIds
+          );
+        } else if (activeCategory === 'Semua') {
+          result = await getTrendingVideos(20, pageToken, existingVideoIds);
+        } else {
+          const query = categoryQueries[activeCategory];
+          result = await searchVideos(query, 20, pageToken, existingVideoIds);
+        }
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        setVideos((prev) =>
+          isInitialLoad ? result.videos : [...prev, ...result.videos]
+        );
+        setNextPageToken(result.nextPageToken);
+      } catch (error: any) {
+        console.error('Failed to fetch videos:', error);
+        setError(error.message || 'Gagal mengambil data dari YouTube API.');
+        if (isInitialLoad) setVideos([]);
+      } finally {
+        if (isInitialLoad) {
+          setLoading(false);
+        } else {
+          setLoadingMore(false);
+        }
+      }
+    },
+    [searchQuery, activeCategory, videos]
+  );
 
   useEffect(() => {
     if (videoToPlay) {
@@ -162,11 +172,11 @@ export default function Home() {
       handleVideoClick(videoToPlay);
       clearVideoToPlay();
     }
-  }, [videoToPlay, clearVideoToPlay, queue, setQueue]);
+  }, [videoToPlay, clearVideoToPlay, queue, setQueue, handleVideoClick]);
 
   useEffect(() => {
     fetchVideos();
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, activeCategory]);
 
   const handleLoadMore = () => {
@@ -231,7 +241,7 @@ export default function Home() {
           videos={videos}
           onVideoClick={handleVideoClick}
           error={error}
-          onRetry={() => fetchVideos('', true)}
+          onRetry={fetchVideos}
           isSearching={!!searchQuery}
           searchQuery={searchQuery}
         />
@@ -240,8 +250,8 @@ export default function Home() {
             <Button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              variant="outline"
-              className="gap-2 rounded-full"
+              variant="default"
+              className="min-w-[200px] rounded-full bg-[#0072ff] py-3 px-8 text-base font-semibold text-white transition-all hover:bg-[#0056cc] hover:-translate-y-0.5"
             >
               {loadingMore ? (
                 <>
