@@ -121,13 +121,15 @@ export default function Home() {
 
     try {
       let result;
+      const existingVideoIds = new Set(videos.map(v => v.id));
+
       if (searchQuery) {
-        result = await searchVideos(searchQuery, 20, pageToken);
+        result = await searchVideos(searchQuery, 20, pageToken, existingVideoIds);
       } else if (activeCategory === 'Semua') {
-        result = await getTrendingVideos(20, pageToken);
+        result = await getTrendingVideos(20, pageToken, existingVideoIds);
       } else {
         const query = categoryQueries[activeCategory];
-        result = await searchVideos(query, 20, pageToken);
+        result = await searchVideos(query, 20, pageToken, existingVideoIds);
       }
       
       if (result.error) {
@@ -149,7 +151,7 @@ export default function Home() {
         setLoadingMore(false);
       }
     }
-  }, [searchQuery, activeCategory]);
+  }, [searchQuery, activeCategory, videos]);
 
   useEffect(() => {
     if (videoToPlay) {
@@ -164,7 +166,8 @@ export default function Home() {
 
   useEffect(() => {
     fetchVideos();
-  }, [fetchVideos]);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, activeCategory]);
 
   const handleLoadMore = () => {
     if (nextPageToken && !loadingMore) {
@@ -228,7 +231,7 @@ export default function Home() {
           videos={videos}
           onVideoClick={handleVideoClick}
           error={error}
-  onRetry={() => fetchVideos('', true)}
+          onRetry={() => fetchVideos('', true)}
           isSearching={!!searchQuery}
           searchQuery={searchQuery}
         />

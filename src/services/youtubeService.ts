@@ -175,25 +175,32 @@ async function fetchChannelAvatars(
 }
 
 async function processVideos(
-  videoItems: YouTubeVideoItem[]
+  videoItems: YouTubeVideoItem[],
+  existingVideoIds: Set<string>
 ): Promise<FormattedVideo[]> {
   if (!videoItems || videoItems.length === 0) return [];
+  
+  const uniqueVideoItems = videoItems.filter(video => {
+    const videoId = typeof video.id === 'object' ? video.id.videoId : video.id;
+    return !existingVideoIds.has(videoId);
+  });
 
-  const channelIds = videoItems.map((video) => video.snippet.channelId);
+  const channelIds = uniqueVideoItems.map((video) => video.snippet.channelId);
   const channelAvatars = await fetchChannelAvatars(channelIds);
-  return formatVideos(videoItems, channelAvatars);
+  return formatVideos(uniqueVideoItems, channelAvatars);
 }
 
 export async function getTrendingVideos(
   maxResults = 20,
-  pageToken = ''
+  pageToken = '',
+  existingVideoIds: Set<string>
 ): Promise<FetchResult> {
   try {
     const data: any = await fetchWithApiKeyRotation(
       `${YOUTUBE_API_URL}/videos?part=snippet,statistics,contentDetails&chart=mostPopular&maxResults=${maxResults}&regionCode=ID&pageToken=${pageToken}`,
       'videos'
     );
-    const videos = await processVideos(data.items);
+    const videos = await processVideos(data.items, existingVideoIds);
     return { videos, nextPageToken: data.nextPageToken };
   } catch (error: any) {
     return { videos: [], error: error.message };
@@ -217,7 +224,8 @@ async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
 export async function searchVideos(
   query: string,
   maxResults = 20,
-  pageToken = ''
+  pageToken = '',
+  existingVideoIds: Set<string>
 ): Promise<FetchResult> {
   try {
     const searchData: any = await fetchWithApiKeyRotation(
@@ -239,7 +247,6 @@ export async function searchVideos(
       (searchData.items || []).map((item: any) => [item.id.videoId, item.snippet])
     );
     
-    // Urutkan videoDetails berdasarkan urutan dari searchData
     const sortedVideoDetails = videoDetails.sort((a, b) => {
       const aIndex = (searchData.items || []).findIndex((item: any) => item.id.videoId === a.id);
       const bIndex = (searchData.items || []).findIndex((item: any) => item.id.videoId === b.id);
@@ -249,14 +256,12 @@ export async function searchVideos(
     const mergedDetails = sortedVideoDetails.map((detail) => {
       const searchSnippet = searchResultsMap.get(detail.id as string);
       if (searchSnippet) {
-        // Gabungkan snippet dari search (untuk publishedAt, dll) dan dari videos (untuk statistik)
-        // snippet dari videos (detail) lebih diutamakan jika ada konflik
          detail.snippet = { ...searchSnippet, ...detail.snippet };
       }
       return detail;
     });
 
-    const videos = await processVideos(mergedDetails);
+    const videos = await processVideos(mergedDetails, existingVideoIds);
     return { videos, nextPageToken: searchData.nextPageToken };
   } catch (error: any) {
     return { videos: [], error: error.message };
