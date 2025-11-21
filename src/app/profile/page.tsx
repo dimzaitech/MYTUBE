@@ -1,5 +1,5 @@
 
-'use client';
+'use client'
 
 import { useState, useEffect } from 'react';
 import ApiStatusDynamic from '@/components/features/ApiStatusDynamic';
@@ -9,6 +9,13 @@ export default function ProfilePage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Cek status otentikasi dari session storage saat komponen dimuat
+  useEffect(() => {
+    if (sessionStorage.getItem('mytube_authenticated') === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,16 +44,9 @@ export default function ProfilePage() {
     }
   };
 
-  // Cek status otentikasi dari session storage saat komponen dimuat
-  useEffect(() => {
-    if (sessionStorage.getItem('mytube_authenticated') === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  return (
-    <div className="profile-page">
-      {!isAuthenticated ? (
+  if (!isAuthenticated) {
+    return (
+      <div className="profile-page">
         <div className="login-container">
           <h1>🔒 MyTUBE Admin</h1>
           <form onSubmit={handleLogin}>
@@ -70,12 +70,14 @@ export default function ProfilePage() {
             </button>
           </form>
         </div>
-      ) : (
-        <div style={{width: '100%', maxWidth: '900px', margin: '0 auto', padding: '24px'}}>
-           <h1 style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', textAlign: 'center'}}>Dashboard Admin</h1>
-           <ApiStatusDynamic />
-        </div>
-      )}
+      </div>
+    )
+  }
+
+  return (
+     <div style={{width: '100%', maxWidth: '900px', margin: '40px auto', padding: '24px'}}>
+       <h1 style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', textAlign: 'center'}}>Dashboard Admin</h1>
+       <ApiStatusDynamic />
     </div>
-  );
+  )
 }
