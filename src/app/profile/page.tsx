@@ -2,75 +2,18 @@
 'use client';
 
 import { useState } from 'react';
-import ApiStatusDynamic from '@/components/features/ApiStatusDynamic';
-import ClientOnly from '@/components/ClientOnly';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import { KeyRound } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
-function SettingsTab() {
-  const handleSave = () => {
-    alert('Pengaturan disimpan! (Fungsionalitas belum diimplementasikan)');
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
-        <h3 className="mb-4 text-lg font-medium">Konfigurasi Kuota API</h3>
-        <div className="space-y-4">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="max-requests">Max Kuota per Kunci</Label>
-            <Input
-              type="number"
-              id="max-requests"
-              defaultValue={
-                process.env.NEXT_PUBLIC_MAX_REQUESTS_PER_KEY || '9000'
-              }
-              className="bg-input"
-            />
-            <p className="text-xs text-muted-foreground">
-              Batas kuota harian sebelum kunci dianggap habis. (Default: 9000)
-            </p>
-          </div>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="reset-hours">Jam Reset Kuota</Label>
-            <Input
-              type="number"
-              id="reset-hours"
-              defaultValue={process.env.NEXT_PUBLIC_QUOTA_RESET_HOURS || '24'}
-              className="bg-input"
-            />
-            <p className="text-xs text-muted-foreground">
-              Interval dalam jam untuk mereset kuota. (Default: 24)
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="mt-6 text-center">
-        <Button onClick={handleSave} variant="default" size="sm">
-          Simpan Pengaturan
-        </Button>
-      </div>
-    </div>
-  );
-}
+// NOTE: The ApiStatusDynamic component has been removed as it relied on 
+// Radix/ShadCN components that are no longer in use on this page.
+// The quota display logic will need to be re-implemented with native HTML.
 
 export default function ProfilePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [quotaInfo, setQuotaInfo] = useState(null); // Placeholder for future use
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,6 +33,7 @@ export default function ProfilePage() {
       
       if (data.success) {
         setIsAuthenticated(true);
+        // In a real app, you'd fetch quota info here
       } else {
         setError(data.error || 'Password salah!');
         setPassword('');
@@ -103,84 +47,58 @@ export default function ProfilePage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <KeyRound className="h-8 w-8 text-primary" />
+      <div className="profile-page" style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+        <div className="login-container" style={{ width: '100%', maxWidth: '400px', padding: '2rem', border: '1px solid #333', borderRadius: '12px', background: '#1a1a1a', textAlign: 'center' }}>
+          <h1>🔒 MyTUBE Admin</h1>
+          <p style={{ color: '#aaa', margin: '0.5rem 0 1.5rem' }}>
+            Masukkan password buat akses kuota.
+          </p>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="input-group" style={{ textAlign: 'left' }}>
+              <label htmlFor="password" className="input-label" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field"
+                placeholder="Password..."
+                required
+                disabled={isLoading}
+                style={{ width: '100%', padding: '0.75rem', background: '#222', border: '1px solid #444', borderRadius: '8px', color: 'white' }}
+              />
             </div>
-            <CardTitle>🔒 MyTUBE Admin</CardTitle>
-            <CardDescription>
-              Masukkan password buat akses kuota.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password..."
-                  required
-                  className="bg-secondary"
-                  disabled={isLoading}
-                />
-              </div>
-              {error && (
-                  <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-              )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Memverifikasi...' : '🔑 Masuk'}
-              </Button>
-            </form>
-
-            <div className="mt-4 rounded-lg bg-secondary p-4 text-center">
-              <p className="text-sm text-muted-foreground"><strong>Hint:</strong> Passwordnya yang gampang, buat elu doang!</p>
+            {error && (
+                <div style={{ color: '#ff8a80', background: 'rgba(255, 138, 128, 0.1)', padding: '0.75rem', borderRadius: '8px', fontSize: '0.9rem' }}>
+                  {error}
+                </div>
+            )}
+            <button type="submit" className="login-button" disabled={isLoading} style={{ padding: '0.75rem', background: '#fff', color: '#0f0f0f', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
+              {isLoading ? 'Memverifikasi...' : '🔑 Masuk'}
+            </button>
+          </form>
+           <div style={{ marginTop: '1rem' }}>
+              <a href="/" style={{ color: '#aaa', fontSize: '0.9rem' }}>← Kembali ke beranda</a>
             </div>
-
-            <Button variant="link" size="sm" asChild className="mt-4 w-full">
-              <Link href="/">← Kembali ke beranda</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <ClientOnly>
-      <div className="container mx-auto max-w-4xl p-4 pt-20 md:p-6 md:pt-24">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold">📊 Pengaturan & Kuota</h1>
-          <p className="text-muted-foreground">
-            Kelola kunci API dan pantau sisa kuota harian.
-          </p>
+     <div className="profile-page" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
+        <div className="quota-container">
+          <h2>📊 Status Kuota API</h2>
+          <div style={{ marginTop: '2rem', padding: '2rem', border: '1px solid #333', borderRadius: '12px', background: '#1a1a1a' }}>
+             <p style={{color: '#aaa'}}>Tampilan status kuota belum diimplementasikan dengan HTML native.</p>
+             <p style={{color: '#aaa', marginTop: '0.5rem'}}>Logika akan ditambahkan di sini.</p>
+          </div>
         </div>
-
-        <Tabs defaultValue="quota" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="quota">📈 Status Kuota</TabsTrigger>
-            <TabsTrigger value="settings">⚙️ Pengaturan</TabsTrigger>
-          </TabsList>
-          <TabsContent value="quota" className="mt-6">
-            <ApiStatusDynamic />
-          </TabsContent>
-          <TabsContent value="settings" className="mt-6">
-            <SettingsTab />
-          </TabsContent>
-        </Tabs>
-
-        <div className="mt-8 text-center">
-          <Button variant="link" size="sm" asChild>
-            <Link href="/">← Kembali ke beranda</Link>
-          </Button>
+         <div style={{ marginTop: '2rem' }}>
+          <a href="/" style={{ color: '#aaa', fontSize: '0.9rem' }}>← Kembali ke beranda</a>
         </div>
-      </div>
-    </ClientOnly>
+    </div>
   );
 }
