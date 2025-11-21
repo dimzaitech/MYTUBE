@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/layout/header';
 import { Suspense } from 'react';
 import { QueueProvider } from '@/context/QueueContext';
 import { cn } from '@/lib/utils';
@@ -48,9 +47,6 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueueProvider>
-          <Suspense fallback={<div className="h-14 bg-background border-b border-border"></div>}>
-            <Header />
-          </Suspense>
           <main>{children}</main>
           <Toaster />
         </QueueProvider>

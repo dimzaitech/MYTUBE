@@ -7,13 +7,11 @@ import {
   type FormattedVideo,
 } from '@/services/youtubeService';
 import { useSearchParams, useRouter } from 'next/navigation';
-import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
+import VideoGrid from '@/components/videos/video-grid';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
-import RecommendationSidebar from '@/components/queue/RecommendationSidebar';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
-import CategoryTabs from '@/components/videos/CategoryTabs';
+import Header from '@/components/layout/header';
 
 const categories = [
   'Semua',
@@ -114,28 +112,22 @@ function HomePageContent() {
         }
       }
     },
-    [searchQuery, activeCategory, nextPageToken, videos]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchQuery, activeCategory] 
   );
   
   useEffect(() => {
-    if (searchQuery) {
-      setActiveCategory('Semua');
-    }
     fetchVideos(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, activeCategory]);
 
   useEffect(() => {
     if (videoToPlay) {
-      const videoIndexInQueue = queue.findIndex((v) => v.id === videoToPlay.id);
-      if (videoIndexInQueue !== -1) {
-        setQueue((prev) => prev.slice(videoIndexInQueue));
-      }
       handleVideoClick(videoToPlay);
       clearVideoToPlay();
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoToPlay, clearVideoToPlay, queue, setQueue]);
+  }, [videoToPlay]);
 
 
   const handleCategorySelect = (category: string) => {
@@ -156,16 +148,6 @@ function HomePageContent() {
       setSelectedVideo(nextInQueue);
       return;
     }
-
-    if (selectedVideo) {
-      const currentIndex = videos.findIndex((v) => v.id === selectedVideo.id);
-      if (currentIndex !== -1 && currentIndex < videos.length - 1) {
-        const nextVideo = videos[currentIndex + 1];
-        setSelectedVideo(nextVideo);
-        return;
-      }
-    }
-
     handleClosePlayer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVideo, videos, playNextInQueue]);
@@ -191,76 +173,49 @@ function HomePageContent() {
             onEnd={playNextVideo}
           />
         </div>
-        <div className="hidden w-full shrink-0 lg:block lg:w-[400px]">
-          <RecommendationSidebar />
-        </div>
       </div>
     );
   }
 
   return (
     <>
-      <div
-        className={`fixed top-14 left-0 z-20 w-full border-b border-border bg-background/95 py-2 backdrop-blur-sm md:py-3 ${
-          searchQuery ? 'hidden' : 'block'
-        }`}
-      >
-        <CategoryTabs
-          categories={categories}
-          selectedCategory={activeCategory}
-          onCategorySelect={handleCategorySelect}
-        />
+      <Header />
+      
+      {/* CATEGORIES */}
+      <div className="categories-container">
+        <div className="categories-scroll">
+          {categories.map(category => (
+            <button
+              key={category}
+              className={`category-tab ${activeCategory === category ? 'active' : ''}`}
+              onClick={() => handleCategorySelect(category)}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className={`px-4 pt-16 ${!searchQuery ? 'md:pt-28' : 'md:pt-16'}`}>
-        {searchQuery && (
-          <div className="mb-4 flex flex-col items-start gap-2 rounded-lg bg-secondary p-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg text-muted-foreground">
-              Hasil pencarian untuk:{' '}
-              <span className="font-semibold text-foreground">
-                "{searchQuery}"
-              </span>
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/')}
-              className="gap-2 text-muted-foreground hover:bg-accent"
-            >
-              Hapus pencarian
-            </Button>
-          </div>
+      {/* MAIN CONTENT */}
+      <main className="main-content">
+        {loading && <p className='p-4'>Memuat video...</p>}
+        {error && <p className='p-4 text-red-500'>Error: {error}</p>}
+        {!loading && !error && (
+          <>
+            <div className="video-grid">
+              <VideoGrid videos={videos} onVideoClick={handleVideoClick} />
+            </div>
+            
+            {nextPageToken && (
+              <div className="load-more-section">
+                <button onClick={handleLoadMore} disabled={loadingMore} className="load-more-btn">
+                  {loadingMore ? 'Memuat...' : 'Muat Lebih Banyak'}
+                </button>
+              </div>
+            )}
+          </>
         )}
-        <VideoGridDynamic
-          loading={loading}
-          loadingMore={loadingMore}
-          videos={videos}
-          onVideoClick={handleVideoClick}
-          error={error}
-          onRetry={() => fetchVideos(true)}
-          isSearching={!!searchQuery}
-          searchQuery={searchQuery}
-        />
-        {nextPageToken && !loading && !error && videos.length > 0 && (
-          <div className="my-8 text-center">
-            <Button
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              variant="default"
-              className="min-w-[200px] rounded-full bg-primary py-3 px-8 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:-translate-y-0.5"
-            >
-              {loadingMore ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Memuat...
-                </>
-              ) : (
-                'Muat Lebih Banyak'
-              )}
-            </Button>
-          </div>
-        )}
-      </div>
+      </main>
     </>
   );
 }
