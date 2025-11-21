@@ -24,44 +24,24 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
     <div
       className="video-card"
       onClick={() => onVideoClick(video)}
-      style={{ cursor: 'pointer' }}
     >
       <div className="thumbnail-container">
         <Image
           src={video.thumbnailUrl}
           alt={video.title}
-          width={320}
-          height={180}
+          width={360}
+          height={202}
           layout="responsive"
+          objectFit="cover"
           data-ai-hint="video thumbnail"
         />
-        <span style={{
-          position: 'absolute',
-          bottom: '8px',
-          right: '8px',
-          backgroundColor: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '2px 6px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          fontWeight: '500'
-        }}>
+        <div className="duration">
           {video.duration}
-        </span>
+        </div>
       </div>
-      <div className="video-info" style={{ display: 'flex', gap: '12px' }}>
-         <img
-            src={video.channelAvatarUrl}
-            alt={video.channelName}
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              flexShrink: 0,
-              marginTop: '4px'
-            }}
-          />
-        <div style={{ flex: '1', overflow: 'hidden' }}>
+      <div className="video-info">
+        <div className="channel-avatar" style={{backgroundImage: `url(${video.channelAvatarUrl})`, backgroundSize: 'cover'}}></div>
+        <div className="video-details">
           <h3 className="video-title">
             {video.title}
           </h3>
@@ -84,11 +64,11 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
                 cursor: 'pointer',
                 padding: '4px'
               }}
-              title="More actions"
+              title="Tambahkan ke antrean"
             >
               <MoreVertical style={{ height: '20px', width: '20px' }} />
             </button>
-          </div>
+        </div>
       </div>
     </div>
   );
