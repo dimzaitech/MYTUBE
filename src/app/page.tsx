@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
@@ -7,10 +8,9 @@ import {
   type FormattedVideo,
 } from '@/services/youtubeService';
 import { useSearchParams, useRouter } from 'next/navigation';
-import VideoGrid from '@/components/videos/video-grid';
+import VideoList from '@/components/videos/video-list'; 
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
-import { Search, Settings, Cast } from 'lucide-react';
 
 const categories = [
   'Semua',
@@ -45,8 +45,6 @@ const categoryQueries: Record<string, string> = {
 function HomePageContent() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [nextPageToken, setNextPageToken] = useState<string | undefined>('');
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [error, setError] = useState<string | null>(null);
 
@@ -64,57 +62,43 @@ function HomePageContent() {
   const [inputValue, setInputValue] = useState(searchQuery);
 
   const fetchVideos = useCallback(
-    async (isInitialLoad = true) => {
-      if (isInitialLoad) {
-        setLoading(true);
-        setVideos([]);
-        setError(null);
-      } else {
-        setLoadingMore(true);
-      }
+    async () => {
+      setLoading(true);
+      setVideos([]);
+      setError(null);
 
       try {
-        const pageToken = isInitialLoad ? '' : nextPageToken;
-        const existingVideoIds = new Set(
-          isInitialLoad ? [] : videos.map((v) => v.id)
-        );
+        const existingVideoIds = new Set<string>();
         let result;
 
         if (searchQuery) {
-          result = await searchVideos(searchQuery, 20, pageToken, existingVideoIds);
+          result = await searchVideos(searchQuery, 20, '', existingVideoIds);
         } else if (activeCategory === 'Semua') {
-          result = await getTrendingVideos(20, pageToken, existingVideoIds);
+          result = await getTrendingVideos(20, '', existingVideoIds);
         } else {
           const query = categoryQueries[activeCategory];
-          result = await searchVideos(query, 20, pageToken, existingVideoIds);
+          result = await searchVideos(query, 20, '', existingVideoIds);
         }
 
         if (result.error) {
           throw new Error(result.error);
         }
         
-        setVideos((prev) =>
-          isInitialLoad ? result.videos : [...prev, ...result.videos]
-        );
-        setNextPageToken(result.nextPageToken);
+        setVideos(result.videos);
 
       } catch (error: any) {
         console.error('Failed to fetch videos:', error);
         setError(error.message || 'Gagal mengambil data dari YouTube API.');
-        if (isInitialLoad) setVideos([]);
+        setVideos([]);
       } finally {
-        if (isInitialLoad) {
-          setLoading(false);
-        } else {
-          setLoadingMore(false);
-        }
+        setLoading(false);
       }
     },
     [searchQuery, activeCategory] 
   );
   
   useEffect(() => {
-    fetchVideos(true);
+    fetchVideos();
   }, [fetchVideos]);
   
   useEffect(() => {
@@ -155,12 +139,6 @@ function HomePageContent() {
     setSelectedVideo(null);
   };
 
-  const handleLoadMore = () => {
-    if (nextPageToken && !loadingMore) {
-      fetchVideos(false);
-    }
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const query = inputValue.trim();
@@ -173,97 +151,83 @@ function HomePageContent() {
 
   if (selectedVideo) {
     return (
-      <div className="main-content" style={{marginTop: '20px', padding: '0 16px', maxWidth: '900px'}}>
+      <main style={{ padding: '0 16px' }}>
           <VideoPlayer
             video={selectedVideo}
             onClose={handleClosePlayer}
             onEnd={playNextVideo}
           />
-      </div>
+      </main>
     );
   }
 
   return (
     <>
-      <header className="app-header">
-        <div className="header-content">
-          <div className="logo-section">
-            <h1 className="app-title">MyTUBE</h1>
-          </div>
-          
-          <form className="search-bar" onSubmit={handleSearch}>
-            <div className="search-input-container">
-              <input
-                type="text"
+      <header>
+          <div className="logo">MyTUBE</div>
+          <form className="search-container" onSubmit={handleSearch}>
+              <input 
+                type="text" 
+                className="search-input" 
                 placeholder="Cari"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                className="search-input"
-                autoComplete="off"
+                autoComplete='off'
               />
-            </div>
-            <button type="submit" className="search-button">
-              <Search size={20} />
-            </button>
+              <button type="submit" className="search-button">
+                  <svg className="search-icon" viewBox="0 0 24 24" fill="#606060">
+                      <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                  </svg>
+              </button>
           </form>
-
-          <div className="header-icons">
-            <button className="cast-button" title="Cast to TV">
-              <Cast size={24}/>
-            </button>
-            <a href="/profile" className="profile-link" title="Pengaturan & Kuota">
-              <Settings size={24} />
-            </a>
-          </div>
-        </div>
       </header>
-      
-      <div className="categories-container">
-        <div className="categories-scroll">
-          {categories.map(category => (
-            <button
-              key={category}
-              className={`category-tab ${activeCategory === category ? 'active' : ''}`}
-              onClick={() => handleCategorySelect(category)}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      <main className="main-content">
-        {loading && <p style={{padding: '16px'}}>Memuat video...</p>}
-        {error && <p style={{padding: '16px', color: 'red'}}>Error: {error}</p>}
+      <nav>
+        <ul>
+          {categories.map(category => (
+            <li key={category}>
+              <a 
+                href="#"
+                className={activeCategory === category ? 'active' : ''}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCategorySelect(category)
+                }}
+              >
+                {category}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <main>
+        {loading && <p>Memuat video...</p>}
+        {error && <p style={{color: 'red'}}>Error: {error}</p>}
         {!loading && !error && (
           <>
-            <div className="video-grid">
-              <VideoGrid videos={videos} onVideoClick={handleVideoClick} />
-            </div>
+            <VideoList videos={videos} onVideoClick={handleVideoClick} />
             
-            {videos.length > 0 && nextPageToken && (
-              <div className="load-more-section">
-                <button onClick={handleLoadMore} disabled={loadingMore} className="load-more-btn">
-                  {loadingMore ? 'Memuat...' : 'Muat Lebih Banyak'}
-                </button>
-              </div>
-            )}
-             {videos.length === 0 && !searchQuery && (
-              <div style={{textAlign: 'center', padding: '40px'}}>Tidak ada video trending.</div>
+            {videos.length === 0 && !searchQuery && (
+              <div>Tidak ada video trending.</div>
             )}
             {videos.length === 0 && searchQuery && (
-              <div style={{textAlign: 'center', padding: '40px'}}>Tidak ada hasil untuk &quot;{searchQuery}&quot;.</div>
+              <div>Tidak ada hasil untuk &quot;{searchQuery}&quot;.</div>
             )}
           </>
         )}
       </main>
+      
+      <footer>
+          <p>MyTUBE &copy; 2024</p>
+      </footer>
     </>
   );
 }
 
 export default function Home() {
   return (
-    <Suspense fallback={<div style={{padding: '32px', textAlign: 'center'}}>Memuat...</div>}>
+    <Suspense fallback={<div>Memuat...</div>}>
       <HomePageContent />
     </Suspense>
   )

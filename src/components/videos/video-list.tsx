@@ -21,3 +21,4 @@ export default function VideoList({ videos, onVideoClick }: VideoListProps) {
     </>
   );
 }
+

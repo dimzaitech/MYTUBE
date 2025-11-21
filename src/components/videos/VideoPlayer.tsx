@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -92,7 +93,7 @@ export default function VideoPlayer({
   };
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', paddingTop: '16px' }}>
       <div style={{aspectRatio: '16/9', width: '100%', overflow: 'hidden', borderRadius: '12px', background: '#000'}}>
         <div id="youtube-player" style={{ height: '100%', width: '100%' }}>
           <YouTube
@@ -109,37 +110,37 @@ export default function VideoPlayer({
       </div>
 
       <div className="video-player-details">
-        <h1 style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.3', color: 'white' }}>
+        <h1 style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.3' }}>
           {video.title}
         </h1>
-        <p style={{ marginTop: '8px', fontSize: '14px', color: '#aaa' }}>
+        <p style={{ marginTop: '8px', fontSize: '14px', color: '#606060' }}>
           <span>{video.views}</span>
           <span style={{ margin: '0 8px' }}>·</span>
           <span>{video.uploadedAt}</span>
         </p>
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 0', borderTop: '1px solid #272727', borderBottom: '1px solid #272727', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 0', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', marginBottom: '16px' }}>
         <img
             src={video.channelAvatarUrl}
             alt={video.channelName}
             style={{ height: '48px', width: '48px', borderRadius: '50%' }}
           />
         <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: '600', color: 'white' }}>
+          <p style={{ fontWeight: '600' }}>
             {video.channelName}
           </p>
         </div>
         <button 
           onClick={() => setIsSubscribed(!isSubscribed)}
           style={{
-            padding: '8px 16px',
+            padding: '10px 16px',
             fontSize: '14px',
             borderRadius: '20px',
             fontWeight: '600',
             transition: 'background-color 0.2s',
-            background: isSubscribed ? '#272727' : '#fff',
-            color: isSubscribed ? '#aaa' : '#0f0f0f',
+            background: isSubscribed ? '#eee' : '#030303',
+            color: isSubscribed ? '#606060' : '#fff',
             border: 'none',
             cursor: 'pointer'
           }}
@@ -149,8 +150,8 @@ export default function VideoPlayer({
       </div>
 
       <div className="video-description-box">
-        <p style={{ fontSize: '14px', fontWeight: '500', color: 'white' }}>{video.views} &bull; {video.uploadedAt}</p>
-        <p style={{ fontSize: '14px', color: '#ddd', marginTop: '8px' }}>
+        <p style={{ fontSize: '14px', fontWeight: '500' }}>{video.views} &bull; {video.uploadedAt}</p>
+        <p style={{ fontSize: '14px', marginTop: '8px' }}>
             Deskripsi video akan ditampilkan di sini. Konten ini adalah placeholder karena data deskripsi tidak diambil dari API untuk saat ini.
         </p>
       </div>

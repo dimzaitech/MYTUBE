@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Suspense } from 'react';
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0f0f0f',
+  themeColor: '#f9f9f9',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -24,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="dark" suppressHydrationWarning>
+    <html lang="id">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -41,13 +42,9 @@ export default function RootLayout({
           async
         ></script>
       </head>
-      <body
-        className={cn('font-body antialiased', 'youtube-player-page')}
-        suppressHydrationWarning
-      >
+      <body>
         <QueueProvider>
-          <main>{children}</main>
-          {/* Toaster component removed to resolve build error */}
+          {children}
         </QueueProvider>
       </body>
     </html>
