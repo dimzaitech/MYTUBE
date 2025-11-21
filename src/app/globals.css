@@ -3,56 +3,68 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Roboto', Arial, sans-serif;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
 body {
     background-color: #f9f9f9;
-    color: #333;
-    line-height: 1.6;
+    color: #0f0f0f;
+    line-height: 1.4;
 }
 
 /* Header Styles */
 header {
     background-color: #fff;
-    padding: 12px 16px;
+    padding: 0 16px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     position: sticky;
     top: 0;
     z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
 }
 
 .logo {
     font-size: 20px;
     font-weight: bold;
     color: #ff0000;
-    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo i {
+    margin-right: 8px;
 }
 
 .search-container {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 16px;
 }
 
 .search-input {
     flex: 1;
-    padding: 14px 16px;
-    border: 1px solid #ddd;
+    padding: 10px 16px;
+    border: 1px solid #ccc;
     border-radius: 24px 0 0 24px;
     font-size: 16px;
     outline: none;
-    height: 48px;
+    height: 40px;
 }
 
 .search-button {
     background-color: #f8f8f8;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-left: none;
     border-radius: 0 24px 24px 0;
-    padding: 14px 20px;
+    padding: 0 16px;
     cursor: pointer;
-    height: 48px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -62,9 +74,16 @@ header {
     background-color: #f0f0f0;
 }
 
-.search-icon {
-    width: 24px;
-    height: 24px;
+.header-icons {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.header-icons i {
+    font-size: 20px;
+    color: #606060;
+    cursor: pointer;
 }
 
 /* Navigation Styles */
@@ -92,15 +111,15 @@ nav ul {
 }
 
 nav li {
-    margin-right: 16px;
+    margin-right: 12px;
 }
 
 nav a {
     text-decoration: none;
-    color: #606060;
+    color: #0f0f0f;
     font-size: 14px;
-    padding: 8px 12px;
-    border-radius: 16px;
+    padding: 6px 12px;
+    border-radius: 8px;
     background-color: #f2f2f2;
     display: inline-block;
     border: none;
@@ -108,7 +127,7 @@ nav a {
 }
 
 nav a.active {
-    background-color: #030303;
+    background-color: #0f0f0f;
     color: #fff;
 }
 
@@ -117,8 +136,14 @@ main {
     padding: 16px;
 }
 
+.video-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
 .video-item {
-    margin-bottom: 24px;
+    margin-bottom: 8px;
     cursor: pointer;
 }
 
@@ -164,7 +189,7 @@ main {
 
 .video-details h3 {
     font-size: 16px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     font-weight: 500;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -194,7 +219,134 @@ footer {
     border-top: 1px solid #eee;
 }
 
-/* Profile Page */
+
+/* Login & Profile Page - keep for now */
+.login-page, .profile-page {
+  min-height: 100vh;
+  background: #f9f9f9;
+  color: #333;
+  padding: 20px;
+}
+.login-container, .profile-header {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.login-container {
+    padding-top: 80px;
+}
+.profile-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Mobile First Styles */
+.mobile-only {
+    display: block;
+}
+.desktop-only {
+    display: none;
+}
+
+/* Tablet Styles */
+@media (min-width: 768px) {
+    main {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .video-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .search-container {
+        max-width: 500px;
+    }
+    .divider {
+      display: none;
+    }
+}
+
+/* Desktop Styles */
+@media (min-width: 1024px) {
+    .video-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .mobile-only {
+        display: none;
+    }
+    
+    .desktop-only {
+        display: flex;
+    }
+    
+    .sidebar {
+        width: 240px;
+        background-color: white;
+        position: fixed;
+        left: 0;
+        top: 56px;
+        bottom: 0;
+        padding: 12px 0;
+        overflow-y: auto;
+        border-right: 1px solid #eee;
+    }
+    
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 24px;
+        font-size: 14px;
+        color: #0f0f0f;
+        text-decoration: none;
+    }
+
+    .sidebar-item:hover {
+        background-color: #f2f2f2;
+    }
+    
+    .sidebar-item i {
+        margin-right: 24px;
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
+    }
+    
+    .sidebar-item.active {
+        background-color: #f2f2f2;
+        font-weight: 500;
+    }
+    
+    .main-content {
+        margin-left: 240px;
+        padding-top: 16px;
+    }
+    
+    /* Hide mobile nav on desktop */
+    nav.mobile-only {
+        display: none;
+    }
+}
+
+/* Large Desktop Styles */
+@media (min-width: 1280px) {
+    .video-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+
+/* Player page styles */
+.video-player-details {
+  padding: 16px 0;
+}
+
+.video-description-box {
+  padding: 16px;
+  border-radius: 12px;
+  background: #eee;
+  color: #333;
+}
+
+/* Profile page styles */
 .profile-page {
   min-height: 100vh;
   background: #f9f9f9;
@@ -325,53 +477,4 @@ footer {
 
 .tab-content {
   padding: 30px;
-}
-
-
-/* Media Query untuk Mobile */
-@media (max-width: 768px) {
-    .search-input {
-        padding: 16px 18px;
-        font-size: 18px;
-        height: 52px;
-    }
-    
-    .search-button {
-        padding: 16px 22px;
-        height: 52px;
-    }
-    
-    .search-icon {
-        width: 26px;
-        height: 26px;
-    }
-}
-
-@media (max-width: 480px) {
-    .search-input {
-        padding: 18px 20px;
-        font-size: 20px;
-        height: 56px;
-    }
-    
-    .search-button {
-        padding: 18px 24px;
-        height: 56px;
-    }
-    
-    .search-icon {
-        width: 28px;
-        height: 28px;
-    }
-}
-
-.video-player-details {
-  padding: 16px 0;
-}
-
-.video-description-box {
-  padding: 16px;
-  border-radius: 12px;
-  background: #eee;
-  color: #333;
 }

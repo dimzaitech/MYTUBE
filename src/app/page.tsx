@@ -8,7 +8,7 @@ import {
   type FormattedVideo,
 } from '@/services/youtubeService';
 import { useSearchParams, useRouter } from 'next/navigation';
-import VideoList from '@/components/videos/video-list'; 
+import VideoGrid from '@/components/videos/video-grid';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
 
@@ -151,7 +151,7 @@ function HomePageContent() {
 
   if (selectedVideo) {
     return (
-      <main style={{ padding: '0 16px' }}>
+      <main>
           <VideoPlayer
             video={selectedVideo}
             onClose={handleClosePlayer}
@@ -163,26 +163,23 @@ function HomePageContent() {
 
   return (
     <>
-      <header>
-          <div className="logo">MyTUBE</div>
-          <form className="search-container" onSubmit={handleSearch}>
-              <input 
-                type="text" 
-                className="search-input" 
-                placeholder="Cari"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                autoComplete='off'
-              />
-              <button type="submit" className="search-button">
-                  <svg className="search-icon" viewBox="0 0 24 24" fill="#606060">
-                      <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-                  </svg>
-              </button>
-          </form>
-      </header>
+      <div className="search-container mobile-only" style={{ padding: '0 16px 16px', margin: 0 }}>
+        <form style={{display: 'flex', width: '100%'}} onSubmit={handleSearch}>
+          <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Cari"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            autoComplete='off'
+          />
+          <button type="submit" className="search-button">
+            <i className="fas fa-search"></i>
+          </button>
+        </form>
+      </div>
 
-      <nav>
+      <nav className="mobile-only">
         <ul>
           {categories.map(category => (
             <li key={category}>
@@ -206,7 +203,7 @@ function HomePageContent() {
         {error && <p style={{color: 'red'}}>Error: {error}</p>}
         {!loading && !error && (
           <>
-            <VideoList videos={videos} onVideoClick={handleVideoClick} />
+            <VideoGrid videos={videos} onVideoClick={handleVideoClick} />
             
             {videos.length === 0 && !searchQuery && (
               <div>Tidak ada video trending.</div>
@@ -218,7 +215,7 @@ function HomePageContent() {
         )}
       </main>
       
-      <footer>
+      <footer className="mobile-only">
           <p>MyTUBE &copy; 2024</p>
       </footer>
     </>
