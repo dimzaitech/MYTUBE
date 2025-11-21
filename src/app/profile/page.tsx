@@ -46,10 +46,11 @@ export default function ProfilePage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="profile-page">
+      <div className="login-page">
         <div className="login-container">
           <h1>🔒 MyTUBE Admin</h1>
-          <form onSubmit={handleLogin}>
+          <p>Hanya developer yang bisa mengakses halaman ini.</p>
+          <form onSubmit={handleLogin} className="login-form">
             <div className="input-group">
               <label htmlFor="password-input" className="input-label">
                 Password
@@ -64,7 +65,7 @@ export default function ProfilePage() {
                 disabled={isLoading}
               />
             </div>
-            {error && <p style={{ color: 'red', fontSize: '14px', textAlign: 'center', marginBottom: '16px' }}>{error}</p>}
+            {error && <p style={{ color: '#ff4444', fontSize: '14px', textAlign: 'center', marginTop: '15px' }}>{error}</p>}
             <button type="submit" className="login-button" disabled={isLoading}>
               {isLoading ? 'Memverifikasi...' : '🔑 Masuk'}
             </button>
@@ -75,8 +76,11 @@ export default function ProfilePage() {
   }
 
   return (
-     <div style={{width: '100%', maxWidth: '900px', margin: '40px auto', padding: '24px'}}>
-       <h1 style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', textAlign: 'center'}}>Dashboard Admin</h1>
+     <div className="profile-page">
+       <div className="profile-header">
+        <h1>📊 Pengaturan & Kuota</h1>
+        <p>Kelola API keys dan pantau sisa kuota</p>
+      </div>
        <ApiStatusDynamic />
     </div>
   )
