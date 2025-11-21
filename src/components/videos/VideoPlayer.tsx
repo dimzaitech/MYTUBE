@@ -108,7 +108,7 @@ export default function VideoPlayer({
         </div>
       </div>
 
-      <div style={{ padding: '16px 0' }}>
+      <div className="video-player-details">
         <h1 style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.3', color: 'white' }}>
           {video.title}
         </h1>
@@ -148,7 +148,7 @@ export default function VideoPlayer({
         </button>
       </div>
 
-      <div style={{ padding: '16px', borderRadius: '12px', background: '#272727' }}>
+      <div className="video-description-box">
         <p style={{ fontSize: '14px', fontWeight: '500', color: 'white' }}>{video.views} &bull; {video.uploadedAt}</p>
         <p style={{ fontSize: '14px', color: '#ddd', marginTop: '8px' }}>
             Deskripsi video akan ditampilkan di sini. Konten ini adalah placeholder karena data deskripsi tidak diambil dari API untuk saat ini.

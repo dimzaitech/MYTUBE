@@ -280,6 +280,18 @@ body {
   align-items: center;
 }
 
+/* VIDEO PLAYER */
+.video-player-details {
+  padding: 16px 0;
+}
+
+.video-description-box {
+  padding: 16px;
+  border-radius: 12px;
+  background: #272727;
+}
+
+
 /* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
   .header-content {
