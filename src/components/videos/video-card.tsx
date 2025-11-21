@@ -33,9 +33,6 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
               objectFit="cover"
             />
             <div className="duration">{video.duration}</div>
-            <button className="cast-button" onClick={handleCastClick} title="Cast to TV">
-                <i className="fas fa-tv"></i>
-            </button>
         </div>
         <div className="video-info">
             <img 
