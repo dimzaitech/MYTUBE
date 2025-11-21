@@ -3,13 +3,11 @@
 import { useEffect, useState, useRef } from 'react';
 import YouTube from 'react-youtube';
 import type { YouTubePlayer } from 'react-youtube';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { type FormattedVideo } from '@/services/youtubeService';
 import backgroundPlayService from '@/lib/backgroundPlayService';
 import castService from '@/services/castService';
 import { Cast, ThumbsUp, ThumbsDown, Share, ListPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { type FormattedVideo } from '@/services/youtubeService';
 
 interface VideoPlayerProps {
   video: FormattedVideo | null;
@@ -41,7 +39,7 @@ export default function VideoPlayer({
   useEffect(() => {
     if (video) {
       backgroundPlayService.setupBackgroundPlay(
-        null, 
+        playerRef.current, 
         {
           title: video.title,
           artist: video.channelName,
@@ -121,6 +119,7 @@ export default function VideoPlayer({
   };
   
   const onPlayerStateChange = (event: { data: number; target: YouTubePlayer }) => {
+    playerRef.current = event.target;
     if (event.data === window.YT.PlayerState.PLAYING) {
       backgroundPlayService.setPlayingState(true);
     } else if (event.data === window.YT.PlayerState.PAUSED) {
@@ -132,9 +131,9 @@ export default function VideoPlayer({
 
 
   return (
-    <div className="w-full video-info-section">
-      <div className="aspect-video w-full overflow-hidden rounded-xl bg-black video-container">
-        <div id="youtube-player" className="youtube-player h-full w-full">
+    <div className="w-full">
+      <div style={{aspectRatio: '16/9'}} className="w-full overflow-hidden rounded-xl bg-black">
+        <div id="youtube-player" className="h-full w-full">
           <YouTube
             videoId={video.id}
             opts={opts}
@@ -149,67 +148,64 @@ export default function VideoPlayer({
       </div>
 
       <div className="py-4">
-        <h1 className="text-lg font-semibold leading-snug text-foreground line-clamp-2 video-title-main">
+        <h1 className="text-lg font-semibold leading-snug text-white line-clamp-2">
           {video.title}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground video-stats">
+        <p className="mt-2 text-sm text-gray-400">
           <span>{video.views}</span>
-          <span className="mx-2 dot">•</span>
+          <span className="mx-2">·</span>
           <span>{video.uploadedAt}</span>
         </p>
       </div>
       
-      <div className="flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-hide pb-4 mb-4 border-b border-border action-buttons">
-           <div className="flex items-center rounded-full bg-secondary">
-              <Button variant="ghost" size="sm" className="action-btn like-btn rounded-full gap-2 pl-4 pr-3">
+      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-4 mb-4 border-b border-gray-700">
+           <div className="flex items-center rounded-full bg-gray-800">
+              <button className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-700">
                   <ThumbsUp className="h-5 w-5" /> 123rb
-              </Button>
-              <div className="w-px h-6 bg-border"></div>
-              <Button variant="ghost" size="sm" className="action-btn dislike-btn rounded-full px-3">
+              </button>
+              <div className="w-px h-6 bg-gray-700"></div>
+              <button className="px-3 py-2 rounded-full hover:bg-gray-700">
                   <ThumbsDown className="h-5 w-5" />
-              </Button>
+              </button>
           </div>
-           <Button variant="secondary" size="sm" className="action-btn share-btn rounded-full gap-2">
+           <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700">
               <Share className="h-4 w-4" /> Bagikan
-          </Button>
-          <Button variant="secondary" size="sm" className="action-btn save-btn rounded-full gap-2">
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700">
               <ListPlus className="h-4 w-4" /> Simpan
-          </Button>
+          </button>
            {isCastAvailable && (
-              <Button variant="secondary" size="sm" onClick={handleCastVideo} className="gap-2 rounded-full">
+              <button onClick={handleCastVideo} className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700">
                   <Cast className="h-4 w-4" /> Cast
-              </Button>
+              </button>
            )}
       </div>
 
-      <div className="flex items-center gap-3 py-4 border-b border-border mb-4 channel-info">
-        <Avatar className='channel-avatar h-12 w-12'>
-          <AvatarImage
+      <div className="flex items-center gap-3 py-4 border-b border-gray-700 mb-4">
+        <img
             src={video.channelAvatarUrl}
             alt={video.channelName}
-            data-ai-hint="person portrait"
+            className="h-12 w-12 rounded-full"
           />
-          <AvatarFallback>{video.channelName.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 channel-details">
-          <p className="font-semibold text-foreground channel-name">
+        <div className="flex-1">
+          <p className="font-semibold text-white">
             {video.channelName}
           </p>
-          <p className="text-xs text-muted-foreground subscriber-count">
+          <p className="text-xs text-gray-400">
             10 jt subscriber
           </p>
         </div>
-        <Button 
+        <button 
           onClick={() => setIsSubscribed(!isSubscribed)}
-          className={`w-full sm:w-auto px-4 py-2 text-sm rounded-full font-semibold transition-colors subscribe-btn ${isSubscribed ? 'subscribed bg-secondary text-muted-foreground hover:bg-accent' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
+          className={`px-4 py-2 text-sm rounded-full font-semibold transition-colors ${isSubscribed ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-white text-black hover:bg-gray-200'}`}
         >
           {isSubscribed ? '✓ Disubscribe' : 'Subscribe'}
-        </Button>
+        </button>
       </div>
 
-      <div className="p-4 rounded-xl bg-secondary description-section">
-        <p className='text-sm font-medium text-foreground'>{video.views} &bull; {video.uploadedAt}</p>
-        <p className="text-sm text-foreground/80 mt-2 description-text">
+      <div className="p-4 rounded-xl bg-gray-800">
+        <p className='text-sm font-medium text-white'>{video.views} &bull; {video.uploadedAt}</p>
+        <p className="text-sm text-gray-300 mt-2">
             Deskripsi video akan ditampilkan di sini. Konten ini adalah placeholder karena data deskripsi tidak diambil dari API untuk saat ini.
         </p>
       </div>
