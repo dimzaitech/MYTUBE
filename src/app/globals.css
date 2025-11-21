@@ -336,3 +336,67 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* CUSTOM COMPONENTS FOR PROFILE PAGE */
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.input-field {
+  width: 100%;
+  background: #272727;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: white;
+  font-size: 14px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #0072ff;
+}
+
+.login-button {
+  width: 100%;
+  background: #0072ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.profile-page {
+  min-height: 100vh;
+  background: #0f0f0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-container {
+  background: #1a1a1a;
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-container h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: white;
+}
