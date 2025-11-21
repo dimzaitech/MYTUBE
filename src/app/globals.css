@@ -44,7 +44,7 @@ header {
     align-items: center;
     width: 100%;
     max-width: 600px;
-    margin: 0 16px;
+    margin: 0 auto;
 }
 
 .search-input {
@@ -84,6 +84,7 @@ header {
     display: flex;
     gap: 24px;
     align-items: center;
+    margin-left: auto;
 }
 
 .header-icons i {
@@ -463,9 +464,13 @@ footer {
         padding-top: 16px;
     }
     
-    /* Hide mobile nav on desktop */
-    nav.mobile-only {
-        display: none;
+    header {
+      padding: 0 24px;
+      justify-content: flex-start;
+    }
+
+    .logo {
+      margin-right: 32px;
     }
 }
 
@@ -617,7 +622,6 @@ footer {
   color: #fff;
   border-bottom-color: #ff0000;
 }
-
 .tab-content {
   padding: 30px;
 }

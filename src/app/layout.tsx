@@ -6,7 +6,6 @@ import './globals.css';
 import { QueueProvider } from '@/context/QueueContext';
 import Link from 'next/link';
 
-// Mock data, in a real app this would come from an API
 const devices = [
     { id: 'tv-living-room', name: 'TV Ruang Tamu', details: 'Tersambung ke WiFi'},
     { id: 'tv-bedroom', name: 'TV Kamar Tidur', details: 'Tersambung ke WiFi'},
@@ -26,7 +25,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
 
   useEffect(() => {
-    // Add global function to window object so other components can trigger it
     (window as any).openCastModal = (videoTitle: string) => {
       setCurrentVideoToCast(videoTitle);
       setIsCastModalOpen(true);
@@ -46,11 +44,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             alert(`Video "${currentVideoToCast}" berhasil di-cast ke ${getDeviceName(selectedDevice)}!`);
         }, 1000);
 
-        // Simulate disconnection
         setTimeout(() => {
             setIsCasting(false);
             alert(`Koneksi ke ${getDeviceName(selectedDevice)} terputus.`);
-        }, 15000); // 15 detik
+        }, 15000);
     } else {
         alert('Pilih perangkat TV terlebih dahulu!');
     }
@@ -59,6 +56,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const handleCancel = () => {
     setIsCastModalOpen(false);
     setSelectedDevice(null);
+  }
+
+  const openCastModalHandler = (title: string) => {
+    setCurrentVideoToCast(title);
+    setIsCastModalOpen(true);
   }
 
   return (
@@ -86,51 +88,56 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <QueueProvider>
           <header>
-            <Link href="/" className="logo">
-                <i className="fab fa-youtube"></i>
-                <span className='mobile-only'>&nbsp;MyTUBE</span>
-            </Link>
+            <div className="flex items-center gap-4">
+               <i className="fas fa-bars text-xl desktop-only cursor-pointer"></i>
+               <Link href="/" className="logo">
+                  <i className="fab fa-youtube"></i>
+                  <span className='hidden lg:block'>&nbsp;MyTUBE</span>
+               </Link>
+            </div>
             
-            <div className="search-container desktop-only">
+            <div className="search-container hidden sm:flex">
                 {/* Search will be handled by page */}
             </div>
             
             <div className="header-icons">
-                <i className="fas fa-video desktop-only"></i>
-                <i className="fas fa-bell desktop-only"></i>
+                <i className="fas fa-search sm:hidden"></i>
+                <i className="fas fa-video hidden sm:block"></i>
+                <i className="fas fa-bell hidden sm:block"></i>
                 <Link href="/profile">
                     <i className="fas fa-user-circle"></i>
                 </Link>
-                 <i className="fas fa-tv" id="cast-icon" onClick={() => (window as any).openCastModal('Layar saat ini')}></i>
+                 <i className="fas fa-tv" id="cast-icon" onClick={() => openCastModalHandler('Layar saat ini')}></i>
                 <div className="casting-indicator" id="casting-indicator" style={{ display: isCasting ? 'flex' : 'none' }}>
                     <i className="fas fa-tv"></i> Casting...
                 </div>
             </div>
           </header>
 
-          <div className="desktop-only sidebar">
-              <a href="#" className="sidebar-item active">
-                  <i className="fas fa-home"></i> Beranda
-              </a>
-              <a href="#" className="sidebar-item">
-                  <i className="fas fa-fire"></i> Trending
-              </a>
-              <a href="#" className="sidebar-item">
-                  <i className="fas fa-music"></i> Musik
-              </a>
-              <a href="#" className="sidebar-item">
-                  <i className="fas fa-film"></i> Film & Acara TV
-              </a>
-              <a href="#" className="sidebar-item">
-                  <i className="fas fa-broadcast-tower"></i> Siaran Langsung
-              </a>
-          </div>
-          
-          <div className="main-content">
-            {children}
+          <div className="flex">
+            <div className="sidebar hidden md:block">
+                <a href="#" className="sidebar-item active">
+                    <i className="fas fa-home"></i> Beranda
+                </a>
+                <a href="#" className="sidebar-item">
+                    <i className="fas fa-fire"></i> Trending
+                </a>
+                <a href="#" className="sidebar-item">
+                    <i className="fas fa-music"></i> Musik
+                </a>
+                <a href="#" className="sidebar-item">
+                    <i className="fas fa-film"></i> Film & Acara TV
+                </a>
+                <a href="#" className="sidebar-item">
+                    <i className="fas fa-broadcast-tower"></i> Siaran Langsung
+                </a>
+            </div>
+            
+            <div className="main-content flex-1">
+              {children}
+            </div>
           </div>
 
-          {/* Cast Modal */}
           <div 
             className="cast-modal" 
             id="cast-modal" 

@@ -163,8 +163,7 @@ function HomePageContent() {
 
   return (
     <>
-      <div className="search-container mobile-only" style={{ padding: '0 16px 16px', margin: 0 }}>
-        <form style={{display: 'flex', width: '100%'}} onSubmit={handleSearch}>
+      <form className="search-container sm:hidden" style={{ padding: '0 16px 16px', margin: 0, width: '100%'}} onSubmit={handleSearch}>
           <input 
             type="text" 
             className="search-input" 
@@ -176,10 +175,28 @@ function HomePageContent() {
           <button type="submit" className="search-button">
             <i className="fas fa-search"></i>
           </button>
-        </form>
-      </div>
+      </form>
 
-      <nav className="mobile-only">
+      <nav className="md:hidden">
+        <ul>
+          {categories.map(category => (
+            <li key={category}>
+              <a 
+                href="#"
+                className={activeCategory === category ? 'active' : ''}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCategorySelect(category)
+                }}
+              >
+                {category}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      <nav className="nav-desktop hidden md:block">
         <ul>
           {categories.map(category => (
             <li key={category}>
@@ -215,7 +232,7 @@ function HomePageContent() {
         )}
       </main>
       
-      <footer className="mobile-only">
+      <footer className="md:hidden">
           <p>MyTUBE &copy; 2024</p>
       </footer>
     </>
