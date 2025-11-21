@@ -110,24 +110,24 @@ export default function VideoPlayer({
       </div>
 
       <div className="video-player-details">
-        <h1 style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.3' }}>
+        <h1 style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.3', color: '#fff' }}>
           {video.title}
         </h1>
-        <p style={{ marginTop: '8px', fontSize: '14px', color: '#606060' }}>
+        <p style={{ marginTop: '8px', fontSize: '14px', color: '#aaa' }}>
           <span>{video.views}</span>
           <span style={{ margin: '0 8px' }}>·</span>
           <span>{video.uploadedAt}</span>
         </p>
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 0', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 0', borderTop: '1px solid #303030', borderBottom: '1px solid #303030', marginBottom: '16px' }}>
         <img
             src={video.channelAvatarUrl}
             alt={video.channelName}
             style={{ height: '48px', width: '48px', borderRadius: '50%' }}
           />
         <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: '600' }}>
+          <p style={{ fontWeight: '600', color: '#fff' }}>
             {video.channelName}
           </p>
         </div>
@@ -139,8 +139,8 @@ export default function VideoPlayer({
             borderRadius: '20px',
             fontWeight: '600',
             transition: 'background-color 0.2s',
-            background: isSubscribed ? '#eee' : '#030303',
-            color: isSubscribed ? '#606060' : '#fff',
+            background: isSubscribed ? '#303030' : '#fff',
+            color: isSubscribed ? '#aaa' : '#0f0f0f',
             border: 'none',
             cursor: 'pointer'
           }}
