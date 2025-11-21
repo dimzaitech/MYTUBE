@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
 import { Suspense } from 'react';
 import { QueueProvider } from '@/context/QueueContext';
 import { cn } from '@/lib/utils';
@@ -48,7 +47,7 @@ export default function RootLayout({
       >
         <QueueProvider>
           <main>{children}</main>
-          <Toaster />
+          {/* Toaster component removed to resolve build error */}
         </QueueProvider>
       </body>
     </html>

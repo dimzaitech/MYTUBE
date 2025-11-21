@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { useToast } from '@/hooks/use-toast';
+// import { useToast } from '@/hooks/use-toast'; // Removed
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export function FirebaseErrorListener() {
-  const { toast } = useToast();
+  // const { toast } = useToast(); // Removed
 
   useEffect(() => {
     const handlePermissionError = (error: FirestorePermissionError) => {
@@ -23,16 +23,23 @@ export function FirebaseErrorListener() {
         }, 0);
       } else {
         // In production, show a friendly toast message.
-        toast({
-          variant: 'destructive',
-          title: 'Akses Ditolak',
-          description:
-            'Anda tidak memiliki izin untuk melakukan tindakan ini. Hubungi administrator jika Anda merasa ini adalah kesalahan.',
-        });
+        // toast({
+        //   variant: 'destructive',
+        //   title: 'Akses Ditolak',
+        //   description:
+        //     'Anda tidak memiliki izin untuk melakukan tindakan ini. Hubungi administrator jika Anda merasa ini adalah kesalahan.',
+        // });
+        console.error("Akses ditolak. Anda tidak memiliki izin untuk melakukan tindakan ini.");
       }
     };
 
     errorEmitter.on('permission-error', handlePermissionError);
 
     return () => {
-      errorEmitter.off('permission-error', handlePermissionError
+      errorEmitter.off('permission-error', handlePermissionError)
+    }
+  // }, [toast]); // Dependency array updated
+  }, []);
+
+  return null;
+}
