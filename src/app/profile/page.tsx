@@ -77,11 +77,13 @@ export default function ProfilePage() {
 
   return (
      <div className="profile-page">
-       <div className="profile-header">
-        <h1>📊 Pengaturan & Kuota</h1>
-        <p>Kelola API keys dan pantau sisa kuota</p>
+       <div className="profile-container">
+         <div className="profile-header">
+          <h1>📊 Pengaturan & Kuota</h1>
+          <p>Kelola API keys dan pantau sisa kuota</p>
+        </div>
+         <ApiStatusDynamic />
       </div>
-       <ApiStatusDynamic />
     </div>
   )
 }

@@ -12,8 +12,6 @@ export default function CategoryTabs({
   onCategorySelect,
 }: CategoryTabsProps) {
 
-  // This component now only renders the mobile category bar.
-  // The desktop version is handled directly in page.tsx for layout simplicity.
   return (
     <>
       {/* Mobile-only Category Bar */}
@@ -36,7 +34,7 @@ export default function CategoryTabs({
       </div>
 
        {/* Desktop Nav */}
-       <div className="hidden md:block desktop-nav">
+       <div className="hidden md:flex desktop-categories">
           {categories.map((category) => (
             <a
                 key={category}
@@ -45,7 +43,7 @@ export default function CategoryTabs({
                     e.preventDefault();
                     onCategorySelect(category);
                 }}
-                className={selectedCategory === category ? 'active' : ''}
+                className={`desktop-category ${selectedCategory === category ? 'active' : ''}`}
             >
                 {category}
             </a>

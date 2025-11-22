@@ -7,20 +7,36 @@ import { type FormattedVideo } from '@/services/youtubeService';
 import { Youtube } from 'lucide-react';
 import { Button } from '../ui/button';
 
-function VideoSkeleton() {
-  return (
-    <div className="mobile-video-item">
-      <Skeleton className="mobile-thumbnail" />
-      <div className="mobile-video-info">
-        <Skeleton className="mobile-channel-avatar" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-4/5" />
-          <Skeleton className="h-3 w-2/3" />
+function VideoSkeleton({ isDesktop }: { isDesktop: boolean }) {
+    if (isDesktop) {
+        return (
+            <div className="desktop-video-item">
+                <Skeleton className="desktop-thumbnail" />
+                <div className="desktop-video-info">
+                    <Skeleton className="desktop-channel-avatar" />
+                    <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+                    <Skeleton className="h-3 w-2/3" />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="mobile-video-item">
+        <Skeleton className="mobile-thumbnail" />
+        <div className="mobile-video-info">
+            <Skeleton className="mobile-channel-avatar" />
+            <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-3 w-2/3" />
+            </div>
         </div>
-      </div>
-    </div>
-  );
+        </div>
+    );
 }
 
 const VideoGrid = dynamic(() => import('./video-grid'), {
@@ -50,11 +66,18 @@ export default function VideoGridDynamic({
 }: VideoGridDynamicProps) {
   if (loading) {
     return (
-      <div className="video-grid mobile-video-grid">
-        {[...Array(8)].map((_, i) => (
-          <VideoSkeleton key={i} />
-        ))}
-      </div>
+      <>
+        <div className="mobile-video-grid md:hidden">
+            {[...Array(8)].map((_, i) => (
+            <VideoSkeleton key={i} isDesktop={false} />
+            ))}
+        </div>
+        <div className="hidden md:grid desktop-video-grid">
+             {[...Array(12)].map((_, i) => (
+               <VideoSkeleton key={i} isDesktop={true} />
+             ))}
+        </div>
+      </>
     );
   }
 
@@ -82,15 +105,28 @@ export default function VideoGridDynamic({
   if (videos && videos.length > 0) {
     return (
       <>
-        <div className="video-grid mobile-video-grid desktop-video-grid">
-           <VideoGrid videos={videos} onVideoClick={onVideoClick} />
+        {/* Mobile Grid */}
+        <div className="mobile-video-grid md:hidden">
+           <VideoGrid videos={videos} onVideoClick={onVideoClick} isDesktop={false} />
         </div>
-        {loadingMore && (
-           <div className="video-grid mobile-video-grid mt-4">
+         {loadingMore && (
+           <div className="mobile-video-grid md:hidden mt-4">
              {[...Array(4)].map((_, i) => (
-               <VideoSkeleton key={`loader-${i}`} />
+               <VideoSkeleton key={`loader-${i}`} isDesktop={false} />
              ))}
            </div>
+        )}
+
+        {/* Desktop Grid */}
+        <div className="hidden md:grid desktop-video-grid">
+           <VideoGrid videos={videos} onVideoClick={onVideoClick} isDesktop={true} />
+        </div>
+        {loadingMore && (
+            <div className="hidden md:grid desktop-video-grid mt-4">
+              {[...Array(4)].map((_, i) => (
+                <VideoSkeleton key={`loader-desktop-${i}`} isDesktop={true} />
+              ))}
+            </div>
         )}
       </>
     );

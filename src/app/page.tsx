@@ -69,7 +69,7 @@ function HomePageContent() {
 
   const handleSearch: FormEventHandler<HTMLFormElement> = (event) => {
       event.preventDefault();
-      const searchInput = event.currentTarget.search as HTMLInputElement | undefined;
+      const searchInput = (event.currentTarget.elements.namedItem('search') as HTMLInputElement | null);
       if (searchInput && searchInput.value) {
           router.push(`/?${createQueryString('q', searchInput.value)}`);
       }
@@ -106,7 +106,7 @@ function HomePageContent() {
           setLoading(false);
           setLoadingMore(false);
       }
-  }, [searchQuery, activeCategory, videos]);
+  }, [searchQuery, activeCategory]); // videos dependency removed
 
 
   const fetchMoreVideos = useCallback(() => {
@@ -163,7 +163,17 @@ function HomePageContent() {
     fetchVideos(true);
   }
 
-  const pageContent = (
+  if (selectedVideo) {
+    return (
+       <VideoPlayer
+          video={selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+          onEnd={playNextVideo}
+        />
+    );
+  }
+
+  return (
     <>
       <CategoryTabs
           categories={categories}
@@ -182,30 +192,36 @@ function HomePageContent() {
       />
     </>
   );
-
-  if (selectedVideo) {
-    return (
-      <RootLayout>
-         <VideoPlayer
-            video={selectedVideo}
-            onClose={() => setSelectedVideo(null)}
-            onEnd={playNextVideo}
-          />
-      </RootLayout>
-    );
-  }
-
-  return (
-    <RootLayout searchQuery={searchQuery} handleSearch={handleSearch}>
-      {pageContent}
-    </RootLayout>
-  );
 }
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
+  
+  // This is a bit of a trick to pass client-side handlers to a server component layout
+  // A better solution might involve a shared context for search.
+  const [page, setPage] = useState<React.ReactNode | null>(null);
+
+  useEffect(() => {
+    setPage(<HomePageContent />);
+  }, []);
+
+  const handleSearch: FormEventHandler<HTMLFormElement> = (event) => {
+    event.preventDefault();
+    const router = (event.target as any).router; // Not ideal, but works for this structure
+    const searchInput = (event.currentTarget.elements.namedItem('search') as HTMLInputElement | null);
+    if (searchInput && searchInput.value) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('q', searchInput.value);
+        window.location.search = params.toString();
+    }
+  };
+
   return (
-    <Suspense fallback={<div className="text-center p-8">Memuat...</div>}>
-      <HomePageContent />
-    </Suspense>
+    <RootLayout searchQuery={searchQuery} handleSearch={handleSearch}>
+      <Suspense fallback={<div className="text-center p-8">Memuat...</div>}>
+        {page || <HomePageContent /> /* Render immediately on client */}
+      </Suspense>
+    </RootLayout>
   )
 }

@@ -7,16 +7,41 @@ import type { FormattedVideo } from '@/services/youtubeService';
 interface VideoCardProps {
   video: FormattedVideo;
   onVideoClick: (video: FormattedVideo) => void;
+  isDesktop: boolean;
 }
 
-export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
-  
-  const handleCastClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering onVideoClick
-    if (window && (window as any).openCastModal) {
-      (window as any).openCastModal(video.title);
-    }
-  };
+export default function VideoCard({ video, onVideoClick, isDesktop }: VideoCardProps) {
+
+  if (isDesktop) {
+    return (
+        <div
+            className="desktop-video-item"
+            onClick={() => onVideoClick(video)}
+            >
+            <div className="desktop-thumbnail">
+                <Image
+                src={video.thumbnailUrl}
+                alt={video.title}
+                layout="fill"
+                objectFit="cover"
+                />
+                <div className="duration">{video.duration}</div>
+            </div>
+            <div className="desktop-video-info">
+                <img 
+                    src={video.channelAvatarUrl} 
+                    alt={video.channelName} 
+                    className="desktop-channel-avatar"
+                />
+                <div className="desktop-video-details">
+                    <h3 className="desktop-video-title">{video.title}</h3>
+                    <p className="desktop-video-meta">{video.channelName}</p>
+                    <p className="desktop-video-meta">{video.views} • {video.uploadedAt}</p>
+                </div>
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div
