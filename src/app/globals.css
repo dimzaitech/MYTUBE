@@ -97,51 +97,6 @@ header {
     color: #ff0000;
 }
 
-/* Navigation Styles */
-nav {
-    background-color: #0f0f0f;
-    padding: 12px 16px;
-    border-bottom: 1px solid #303030;
-    overflow-x: auto;
-    white-space: nowrap;
-}
-
-nav::-webkit-scrollbar {
-  display: none;
-}
-
-nav {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-
-nav ul {
-    list-style: none;
-    display: flex;
-}
-
-nav li {
-    margin-right: 12px;
-}
-
-nav a {
-    text-decoration: none;
-    color: #ffffff;
-    font-size: 14px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background-color: #303030;
-    display: inline-block;
-    border: none;
-    cursor: pointer;
-}
-
-nav a.active {
-    background-color: #ffffff;
-    color: #0f0f0f;
-}
-
 /* Main Content Styles */
 main {
     padding: 16px;
@@ -383,14 +338,6 @@ footer {
   margin-bottom: 40px;
 }
 
-/* Mobile First Styles */
-.mobile-only {
-    display: block;
-}
-.desktop-only {
-    display: none;
-}
-
 /* Tablet Styles */
 @media (min-width: 768px) {
     main {
@@ -412,14 +359,6 @@ footer {
 @media (min-width: 1024px) {
     .video-grid {
         grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .mobile-only {
-        display: none;
-    }
-    
-    .desktop-only {
-        display: flex;
     }
     
     .sidebar {
@@ -471,6 +410,48 @@ footer {
 
     .logo {
       margin-right: 32px;
+    }
+
+    /* Desktop Navigation - FIXED SINGLE ROW */
+    .desktop-nav {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #303030;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+    }
+
+    .desktop-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .desktop-nav {
+        -ms-overflow-style: none;  
+        scrollbar-width: none;  
+    }
+    
+    .desktop-nav a {
+        padding: 8px 16px;
+        background: #303030;
+        border-radius: 8px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+    }
+    
+    .desktop-nav a.active {
+        background: white;
+        color: #0f0f0f;
+    }
+    
+    .desktop-nav a:hover {
+        background: #505050;
     }
 }
 

@@ -150,21 +150,11 @@ function HomePageContent() {
 
   return (
     <>
-      <div className="md:hidden">
-        <CategoryTabs 
-            categories={categories}
-            selectedCategory={activeCategory}
-            onCategorySelect={handleCategorySelect}
-        />
-      </div>
-
-       <div className="desktop-nav hidden md:block">
-          <CategoryTabs 
-            categories={categories}
-            selectedCategory={activeCategory}
-            onCategorySelect={handleCategorySelect}
-          />
-      </div>
+      <CategoryTabs 
+        categories={categories}
+        selectedCategory={activeCategory}
+        onCategorySelect={handleCategorySelect}
+      />
 
       <main>
           <VideoGridDynamic
@@ -192,5 +182,3 @@ export default function Home() {
     </Suspense>
   )
 }
-
-    
