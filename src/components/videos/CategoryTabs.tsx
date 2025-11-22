@@ -11,44 +11,28 @@ export default function CategoryTabs({
   selectedCategory,
   onCategorySelect,
 }: CategoryTabsProps) {
-
   return (
-    <>
-      {/* Mobile-only Category Bar */}
-      <div className="mobile-categories md:hidden">
-        {categories.map((category) => (
-          <a
-            key={category}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              onCategorySelect(category);
-            }}
-            className={`mobile-category ${
-              selectedCategory === category ? 'active' : ''
-            }`}
-          >
-            {category}
-          </a>
-        ))}
-      </div>
-
-       {/* Desktop Nav */}
-       <div className="hidden md:flex desktop-categories">
+    <div className="categories-container">
+      <div className="categories-scroll">
+        <ul className="categories-nav">
           {categories.map((category) => (
-            <a
-                key={category}
+            <li key={category} className="category-item">
+              <a
                 href="#"
                 onClick={(e) => {
-                    e.preventDefault();
-                    onCategorySelect(category);
+                  e.preventDefault();
+                  onCategorySelect(category);
                 }}
-                className={`desktop-category ${selectedCategory === category ? 'active' : ''}`}
-            >
+                className={`category-link ${
+                  selectedCategory === category ? 'active' : ''
+                }`}
+              >
                 {category}
-            </a>
+              </a>
+            </li>
           ))}
+        </ul>
       </div>
-    </>
+    </div>
   );
 }
