@@ -163,39 +163,42 @@ function HomePageContent() {
 
   return (
     <>
-      <form className="search-container sm:hidden" style={{ padding: '0 16px 16px', margin: 0, width: '100%'}} onSubmit={handleSearch}>
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Cari"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            autoComplete='off'
-          />
-          <button type="submit" className="search-button">
-            <i className="fas fa-search"></i>
-          </button>
-      </form>
+      {/* Mobile Search & Nav */}
+      <div className="md:hidden">
+        <form className="search-container" style={{ padding: '0 16px 16px', margin: 0, width: '100%'}} onSubmit={handleSearch}>
+            <input 
+              type="text" 
+              className="search-input" 
+              placeholder="Cari"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              autoComplete='off'
+            />
+            <button type="submit" className="search-button">
+              <i className="fas fa-search"></i>
+            </button>
+        </form>
+        <nav>
+          <ul>
+            {categories.map(category => (
+              <li key={category}>
+                <a 
+                  href="#"
+                  className={activeCategory === category ? 'active' : ''}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleCategorySelect(category)
+                  }}
+                >
+                  {category}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
 
-      <nav className="md:hidden">
-        <ul>
-          {categories.map(category => (
-            <li key={category}>
-              <a 
-                href="#"
-                className={activeCategory === category ? 'active' : ''}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleCategorySelect(category)
-                }}
-              >
-                {category}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      
+      {/* Desktop Nav */}
       <nav className="nav-desktop hidden md:block">
         <ul>
           {categories.map(category => (
