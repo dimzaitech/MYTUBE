@@ -67,10 +67,11 @@ export default function VideoCard({ video, onVideoClick, isDesktop }: VideoCardP
             />
             <div className="mobile-video-details">
                 <h3 className="mobile-video-title">{video.title}</h3>
-                <p className="mobile-video-meta">{video.channelName}</p>
-                <p className="mobile-video-meta">{video.views} • {video.uploadedAt}</p>
+                <p className="mobile-video-meta">{video.channelName} • {video.views} • {video.uploadedAt}</p>
             </div>
         </div>
     </div>
   );
 }
+
+    

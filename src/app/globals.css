@@ -171,11 +171,7 @@
             font-weight: 500;
         }
         
-        /* Mobile Video Grid */
-        .mobile-video-grid {
-            padding: 16px;
-        }
-        
+        /* Mobile Video List */
         .mobile-video-item {
             margin-bottom: 24px;
         }
@@ -579,4 +575,5 @@
           cursor: pointer;
           margin-top: 10px;
         }
+    
     

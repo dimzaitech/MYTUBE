@@ -67,7 +67,7 @@ export default function VideoGridDynamic({
   if (loading) {
     return (
       <>
-        <div className="mobile-video-grid md:hidden">
+        <div className="block md:hidden p-4">
             {[...Array(8)].map((_, i) => (
             <VideoSkeleton key={i} isDesktop={false} />
             ))}
@@ -105,29 +105,29 @@ export default function VideoGridDynamic({
   if (videos && videos.length > 0) {
     return (
       <>
-        {/* Mobile Grid */}
-        <div className="mobile-video-grid md:hidden">
+        {/* Mobile List */}
+        <div className="block md:hidden p-4">
            <VideoGrid videos={videos} onVideoClick={onVideoClick} isDesktop={false} />
+           {loadingMore && (
+             <>
+               {[...Array(4)].map((_, i) => (
+                 <VideoSkeleton key={`loader-${i}`} isDesktop={false} />
+               ))}
+             </>
+           )}
         </div>
-         {loadingMore && (
-           <div className="mobile-video-grid md:hidden mt-4">
-             {[...Array(4)].map((_, i) => (
-               <VideoSkeleton key={`loader-${i}`} isDesktop={false} />
-             ))}
-           </div>
-        )}
 
         {/* Desktop Grid */}
         <div className="hidden md:grid desktop-video-grid">
            <VideoGrid videos={videos} onVideoClick={onVideoClick} isDesktop={true} />
+           {loadingMore && (
+              <>
+                {[...Array(4)].map((_, i) => (
+                  <VideoSkeleton key={`loader-desktop-${i}`} isDesktop={true} />
+                ))}
+              </>
+           )}
         </div>
-        {loadingMore && (
-            <div className="hidden md:grid desktop-video-grid mt-4">
-              {[...Array(4)].map((_, i) => (
-                <VideoSkeleton key={`loader-desktop-${i}`} isDesktop={true} />
-              ))}
-            </div>
-        )}
       </>
     );
   }
@@ -148,3 +148,5 @@ export default function VideoGridDynamic({
     </div>
   );
 }
+
+    
