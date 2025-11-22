@@ -9,11 +9,11 @@ import { Button } from '../ui/button';
 
 function VideoSkeleton() {
   return (
-    <div className="flex flex-col">
-      <Skeleton className="relative aspect-video w-full" />
-      <div className="flex gap-3 p-3">
-        <Skeleton className="h-9 w-9 flex-shrink-0 rounded-full" />
-        <div className="flex flex-1 flex-col gap-2">
+    <div className="mobile-video-item">
+      <Skeleton className="mobile-thumbnail" />
+      <div className="mobile-video-info">
+        <Skeleton className="mobile-channel-avatar" />
+        <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-4/5" />
           <Skeleton className="h-3 w-2/3" />
@@ -50,8 +50,8 @@ export default function VideoGridDynamic({
 }: VideoGridDynamicProps) {
   if (loading) {
     return (
-      <div className="video-grid">
-        {[...Array(12)].map((_, i) => (
+      <div className="video-grid mobile-video-grid">
+        {[...Array(8)].map((_, i) => (
           <VideoSkeleton key={i} />
         ))}
       </div>
@@ -60,7 +60,7 @@ export default function VideoGridDynamic({
 
   if (error) {
      return (
-       <div className="flex h-[calc(100vh-200px)] flex-col items-center justify-center space-y-4 text-center">
+       <div className="flex h-[calc(100vh-300px)] flex-col items-center justify-center space-y-4 text-center">
          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-destructive/10">
            <Youtube className="h-12 w-12 text-destructive" />
          </div>
@@ -82,11 +82,11 @@ export default function VideoGridDynamic({
   if (videos && videos.length > 0) {
     return (
       <>
-        <div className="desktop-video-grid video-grid">
+        <div className="video-grid mobile-video-grid desktop-video-grid">
            <VideoGrid videos={videos} onVideoClick={onVideoClick} />
         </div>
         {loadingMore && (
-           <div className="video-grid mt-4">
+           <div className="video-grid mobile-video-grid mt-4">
              {[...Array(4)].map((_, i) => (
                <VideoSkeleton key={`loader-${i}`} />
              ))}
@@ -97,7 +97,7 @@ export default function VideoGridDynamic({
   }
 
   return (
-    <div className="flex h-[calc(100vh-200px)] flex-col items-center justify-center space-y-4 text-center">
+    <div className="flex h-[calc(100vh-300px)] flex-col items-center justify-center space-y-4 text-center">
       <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
         <Youtube className="h-12 w-12 text-muted-foreground" />
       </div>

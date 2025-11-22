@@ -11,10 +11,10 @@ interface VideoGridProps {
 
 export default function VideoGrid({ videos, onVideoClick }: VideoGridProps) {
   return (
-    <div className="video-grid">
-      {videos.map((video) => (
-        <VideoCard key={video.id} video={video} onVideoClick={onVideoClick} />
+    <>
+      {videos.map((video, index) => (
+        <VideoCard key={video.id + '-' + index} video={video} onVideoClick={onVideoClick} />
       ))}
-    </div>
+    </>
   );
 }

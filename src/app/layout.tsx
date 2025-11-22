@@ -101,7 +101,7 @@ export default function RootLayout({
                 </Link>
             </div>
         </div>
-        <main style={{ paddingTop: '56px', paddingBottom: '56px' }}>
+        <main className="mobile-main">
           {children}
         </main>
         <nav className="mobile-nav">
