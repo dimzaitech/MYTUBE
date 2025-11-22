@@ -1,3 +1,4 @@
+
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -49,7 +50,7 @@ export default function VideoGridDynamic({
 }: VideoGridDynamicProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="video-grid">
         {[...Array(12)].map((_, i) => (
           <VideoSkeleton key={i} />
         ))}
@@ -81,9 +82,11 @@ export default function VideoGridDynamic({
   if (videos && videos.length > 0) {
     return (
       <>
-        <VideoGrid videos={videos} onVideoClick={onVideoClick} />
+        <div className="desktop-video-grid video-grid">
+           <VideoGrid videos={videos} onVideoClick={onVideoClick} />
+        </div>
         {loadingMore && (
-           <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
+           <div className="video-grid mt-4">
              {[...Array(4)].map((_, i) => (
                <VideoSkeleton key={`loader-${i}`} />
              ))}

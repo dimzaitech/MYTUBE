@@ -1,3 +1,4 @@
+
 'use client';
 
 import { YOUTUBE_API_URL } from '@/lib/config';
@@ -190,7 +191,9 @@ async function processVideos(
   
   const uniqueVideoItems = videoItems.filter(video => {
     const videoId = typeof video.id === 'object' ? video.id.videoId : video.id;
-    return !existingVideoIds.has(videoId);
+    if (!videoId || existingVideoIds.has(videoId)) return false;
+    existingVideoIds.add(videoId);
+    return true;
   });
 
   const channelIds = uniqueVideoItems.map((video) => video.snippet.channelId);
@@ -232,7 +235,7 @@ async function getVideoDetails(videoIds: string): Promise<YouTubeVideoItem[]> {
 export async function searchVideos(
   query: string,
   maxResults = 20,
-  pageToken = '',
+  pageToken: string | undefined = '',
   existingVideoIds: Set<string>
 ): Promise<FetchResult> {
   try {
