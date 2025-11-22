@@ -11,8 +11,6 @@ const isClient = typeof window !== 'undefined';
 
 export default function RootLayout({ 
   children,
-  searchQuery,
-  handleSearch,
 }: { 
   children: ReactNode,
   searchQuery?: string,
@@ -45,9 +43,7 @@ export default function RootLayout({
                 <i className="fas fa-search"></i>
             </div>
         </header>
-        <main className="mobile-main">
-          {children}
-        </main>
+        {children}
         <nav className="mobile-nav">
             <Link href="/" className="mobile-nav-item active">
                 <i className="fas fa-home"></i>
@@ -106,8 +102,8 @@ export default function RootLayout({
 
         <div className="desktop-main-area">
             <header className="desktop-header">
-                <form className="desktop-search" onSubmit={handleSearch}>
-                    <input type="text" name="search" className="desktop-search-input" placeholder="Cari" defaultValue={searchQuery} />
+                <form className="desktop-search">
+                    <input type="text" name="search" className="desktop-search-input" placeholder="Cari" />
                     <button type="submit" className="desktop-search-button">
                         <i className="fas fa-search"></i>
                     </button>
@@ -121,9 +117,7 @@ export default function RootLayout({
                 </div>
             </header>
             
-            <main className="desktop-main">
-              {children}
-            </main>
+            {children}
         </div>
     </div>
   );

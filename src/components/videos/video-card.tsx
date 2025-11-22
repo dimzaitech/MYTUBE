@@ -73,5 +73,3 @@ export default function VideoCard({ video, onVideoClick, isDesktop }: VideoCardP
     </div>
   );
 }
-
-    

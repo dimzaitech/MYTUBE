@@ -11,6 +11,7 @@ import CategoryTabs from '@/components/videos/CategoryTabs';
 import RootLayout from './layout';
 
 const categories = [
+  'Semua',
   'Musik',
   'Karaoke',
   'Berita',
@@ -25,6 +26,7 @@ const categories = [
 ];
 
 const categoryQueries: Record<string, string> = {
+  Semua: 'trending indonesia',
   Musik: 'music official audio',
   Karaoke: 'karaoke lyrics',
   Berita: 'berita terbaru hari ini',
@@ -43,7 +45,7 @@ function HomePageContent() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextPageToken, setNextPageToken] = useState<string | undefined>('');
-  const [activeCategory, setActiveCategory] = useState('Musik');
+  const [activeCategory, setActiveCategory] = useState('Semua');
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
@@ -165,11 +167,13 @@ function HomePageContent() {
 
   if (selectedVideo) {
     return (
-       <VideoPlayer
-          video={selectedVideo}
-          onClose={() => setSelectedVideo(null)}
-          onEnd={playNextVideo}
-        />
+      <main className="desktop-main">
+         <VideoPlayer
+            video={selectedVideo}
+            onClose={() => setSelectedVideo(null)}
+            onEnd={playNextVideo}
+          />
+      </main>
     );
   }
 
@@ -180,16 +184,30 @@ function HomePageContent() {
           selectedCategory={activeCategory}
           onCategorySelect={handleCategorySelect}
         />
-      <VideoGridDynamic
-          loading={loading}
-          loadingMore={loadingMore}
-          videos={videos}
-          onVideoClick={handleVideoClick}
-          error={error}
-          onRetry={handleRetry}
-          isSearching={!!searchQuery}
-          searchQuery={searchQuery}
-      />
+      <main className="mobile-main">
+        <VideoGridDynamic
+            loading={loading}
+            loadingMore={loadingMore}
+            videos={videos}
+            onVideoClick={handleVideoClick}
+            error={error}
+            onRetry={handleRetry}
+            isSearching={!!searchQuery}
+            searchQuery={searchQuery}
+        />
+      </main>
+      <main className="desktop-main">
+         <VideoGridDynamic
+            loading={loading}
+            loadingMore={loadingMore}
+            videos={videos}
+            onVideoClick={handleVideoClick}
+            error={error}
+            onRetry={handleRetry}
+            isSearching={!!searchQuery}
+            searchQuery={searchQuery}
+        />
+      </main>
     </>
   );
 }
