@@ -7,14 +7,13 @@ import {
   searchVideos,
   type FormattedVideo,
 } from '@/services/youtubeService';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 import CategoryTabs from '@/components/videos/CategoryTabs';
 
 const categories = [
-  'Semua',
   'Musik',
   'Karaoke',
   'Berita',
@@ -46,10 +45,11 @@ const categoryQueries: Record<string, string> = {
 function HomePageContent() {
   const [videos, setVideos] = useState<FormattedVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('Semua');
+  const [activeCategory, setActiveCategory] = useState('Musik');
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const {
     playNextInQueue,
@@ -74,10 +74,8 @@ function HomePageContent() {
 
         if (isSearch) {
           result = await searchVideos(searchQuery, 20, '', existingVideoIds);
-        } else if (activeCategory === 'Semua') {
-          result = await getTrendingVideos(20, '', existingVideoIds);
         } else {
-          const query = categoryQueries[activeCategory];
+          const query = categoryQueries[activeCategory] || 'trending indonesia';
           result = await searchVideos(query, 20, '', existingVideoIds);
         }
 
@@ -99,8 +97,12 @@ function HomePageContent() {
   );
   
   useEffect(() => {
+    // If there's a search query, don't auto-set a category
+    if (!searchQuery) {
+        setActiveCategory('Musik');
+    }
     fetchVideos();
-  }, [fetchVideos]);
+  }, [fetchVideos, searchQuery]);
   
   useEffect(() => {
     if (videoToPlay) {
@@ -113,11 +115,13 @@ function HomePageContent() {
 
   const handleCategorySelect = (category: string) => {
     if (searchQuery) {
-      router.push('/');
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('q');
+        router.push(`${pathname}?${params.toString()}`);
     }
     setActiveCategory(category);
   };
-
+  
   const handleVideoClick = (video: FormattedVideo) => {
     setSelectedVideo(video);
   };
@@ -150,14 +154,37 @@ function HomePageContent() {
 
   return (
     <>
-      <CategoryTabs 
-        categories={categories}
-        selectedCategory={activeCategory}
-        onCategorySelect={handleCategorySelect}
-      />
+      {/* Mobile Nav */}
+      <div className="mobile-only">
+        <CategoryTabs 
+            categories={categories}
+            selectedCategory={activeCategory}
+            onCategorySelect={handleCategorySelect}
+        />
+        <main>
+            <VideoGridDynamic
+                loading={loading}
+                videos={videos}
+                onVideoClick={handleVideoClick}
+                error={error}
+                onRetry={fetchVideos}
+                isSearching={!!searchQuery}
+                searchQuery={searchQuery}
+            />
+        </main>
+        <footer>
+            <p>MyTUBE &copy; 2024</p>
+        </footer>
+      </div>
 
-      <main>
-          <VideoGridDynamic
+      {/* Desktop Main Content */}
+      <div className="desktop-main desktop-only">
+        <CategoryTabs 
+            categories={categories}
+            selectedCategory={activeCategory}
+            onCategorySelect={handleCategorySelect}
+        />
+        <VideoGridDynamic
             loading={loading}
             videos={videos}
             onVideoClick={handleVideoClick}
@@ -165,12 +192,8 @@ function HomePageContent() {
             onRetry={fetchVideos}
             isSearching={!!searchQuery}
             searchQuery={searchQuery}
-          />
-      </main>
-      
-      <footer className="md:hidden">
-          <p>MyTUBE &copy; 2024</p>
-      </footer>
+        />
+      </div>
     </>
   );
 }
