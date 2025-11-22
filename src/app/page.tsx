@@ -8,9 +8,10 @@ import {
   type FormattedVideo,
 } from '@/services/youtubeService';
 import { useSearchParams, useRouter } from 'next/navigation';
-import VideoGrid from '@/components/videos/video-grid';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
+import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
+import CategoryTabs from '@/components/videos/CategoryTabs';
 
 const categories = [
   'Semua',
@@ -59,8 +60,7 @@ function HomePageContent() {
   } = useQueue();
 
   const searchQuery = searchParams.get('q') || '';
-  const [inputValue, setInputValue] = useState(searchQuery);
-
+  
   const fetchVideos = useCallback(
     async () => {
       setLoading(true);
@@ -70,8 +70,9 @@ function HomePageContent() {
       try {
         const existingVideoIds = new Set<string>();
         let result;
+        const isSearch = !!searchQuery;
 
-        if (searchQuery) {
+        if (isSearch) {
           result = await searchVideos(searchQuery, 20, '', existingVideoIds);
         } else if (activeCategory === 'Semua') {
           result = await getTrendingVideos(20, '', existingVideoIds);
@@ -101,10 +102,6 @@ function HomePageContent() {
     fetchVideos();
   }, [fetchVideos]);
   
-  useEffect(() => {
-    setInputValue(searchQuery);
-  }, [searchQuery]);
-
   useEffect(() => {
     if (videoToPlay) {
       handleVideoClick(videoToPlay);
@@ -139,16 +136,6 @@ function HomePageContent() {
     setSelectedVideo(null);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = inputValue.trim();
-    if (query) {
-      router.push(`/?q=${encodeURIComponent(query)}`);
-    } else {
-      router.push('/');
-    }
-  };
-
   if (selectedVideo) {
     return (
       <main>
@@ -163,76 +150,32 @@ function HomePageContent() {
 
   return (
     <>
-      {/* Mobile Search & Nav */}
       <div className="md:hidden">
-        <form className="search-container" style={{ padding: '0 16px 16px', margin: 0, width: '100%'}} onSubmit={handleSearch}>
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="Cari"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              autoComplete='off'
-            />
-            <button type="submit" className="search-button">
-              <i className="fas fa-search"></i>
-            </button>
-        </form>
-        <nav>
-          <ul>
-            {categories.map(category => (
-              <li key={category}>
-                <a 
-                  href="#"
-                  className={activeCategory === category ? 'active' : ''}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleCategorySelect(category)
-                  }}
-                >
-                  {category}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <CategoryTabs 
+            categories={categories}
+            selectedCategory={activeCategory}
+            onCategorySelect={handleCategorySelect}
+        />
       </div>
 
-      {/* Desktop Nav */}
-      <nav className="nav-desktop hidden md:block">
-        <ul>
-          {categories.map(category => (
-            <li key={category}>
-              <a 
-                href="#"
-                className={activeCategory === category ? 'active' : ''}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleCategorySelect(category)
-                }}
-              >
-                {category}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+       <div className="desktop-nav hidden md:block">
+          <CategoryTabs 
+            categories={categories}
+            selectedCategory={activeCategory}
+            onCategorySelect={handleCategorySelect}
+          />
+      </div>
 
       <main>
-        {loading && <p>Memuat video...</p>}
-        {error && <p style={{color: 'red'}}>Error: {error}</p>}
-        {!loading && !error && (
-          <>
-            <VideoGrid videos={videos} onVideoClick={handleVideoClick} />
-            
-            {videos.length === 0 && !searchQuery && (
-              <div>Tidak ada video trending.</div>
-            )}
-            {videos.length === 0 && searchQuery && (
-              <div>Tidak ada hasil untuk &quot;{searchQuery}&quot;.</div>
-            )}
-          </>
-        )}
+          <VideoGridDynamic
+            loading={loading}
+            videos={videos}
+            onVideoClick={handleVideoClick}
+            error={error}
+            onRetry={fetchVideos}
+            isSearching={!!searchQuery}
+            searchQuery={searchQuery}
+          />
       </main>
       
       <footer className="md:hidden">

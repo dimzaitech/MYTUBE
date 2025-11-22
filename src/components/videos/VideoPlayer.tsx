@@ -6,6 +6,12 @@ import YouTube from 'react-youtube';
 import type { YouTubePlayer } from 'react-youtube';
 import backgroundPlayService from '@/lib/backgroundPlayService';
 import { type FormattedVideo } from '@/services/youtubeService';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { ThumbsUp, ThumbsDown, Share2, Download, ListPlus } from 'lucide-react';
+import { useQueue } from '@/context/QueueContext';
+import RecommendationSidebar from '../queue/RecommendationSidebar';
+
 
 interface VideoPlayerProps {
   video: FormattedVideo | null;
@@ -20,6 +26,7 @@ export default function VideoPlayer({
 }: VideoPlayerProps) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const playerRef = useRef<YouTubePlayer | null>(null);
+  const { addToQueue } = useQueue();
 
   useEffect(() => {
     if (video) {
@@ -59,11 +66,6 @@ export default function VideoPlayer({
     }
   }, [video]);
 
-  const handleClosePlayer = () => {
-    backgroundPlayService.cleanup();
-    onClose();
-  };
-
   if (!video) {
     return null;
   }
@@ -93,10 +95,10 @@ export default function VideoPlayer({
   };
 
   return (
-    <div style={{ width: '100%', paddingTop: '16px' }}>
-      <div style={{aspectRatio: '16/9', width: '100%', overflow: 'hidden', borderRadius: '12px', background: '#000'}}>
-        <div id="youtube-player" style={{ height: '100%', width: '100%' }}>
-          <YouTube
+    <div className="flex flex-col gap-6 lg:flex-row">
+      <div className="flex-1">
+        <div className="aspect-video w-full overflow-hidden rounded-xl bg-black">
+           <YouTube
             videoId={video.id}
             opts={opts}
             className="h-full w-full"
@@ -107,55 +109,60 @@ export default function VideoPlayer({
             onError={(e) => console.error('YouTube Player Error:', e)}
           />
         </div>
-      </div>
 
-      <div className="video-player-details">
-        <h1 style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.3', color: '#fff' }}>
-          {video.title}
-        </h1>
-        <p style={{ marginTop: '8px', fontSize: '14px', color: '#aaa' }}>
-          <span>{video.views}</span>
-          <span style={{ margin: '0 8px' }}>·</span>
-          <span>{video.uploadedAt}</span>
-        </p>
+        <div className="mt-4">
+          <h1 className="text-xl font-bold text-foreground">{video.title}</h1>
+          
+          <div className="mt-4 flex flex-col items-start gap-4 md:flex-row md:items-center">
+             <div className="flex items-center gap-3">
+              <Image
+                src={video.channelAvatarUrl}
+                alt={video.channelName}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <div>
+                <p className="font-semibold text-foreground">{video.channelName}</p>
+                <p className="text-xs text-muted-foreground">1.2jt subscriber</p>
+              </div>
+            </div>
+             <Button 
+                onClick={() => setIsSubscribed(!isSubscribed)}
+                className={`rounded-full font-semibold ${isSubscribed ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80' : 'bg-foreground text-background hover:bg-foreground/90'}`}
+             >
+              {isSubscribed ? 'Disubscribe' : 'Subscribe'}
+            </Button>
+            
+            <div className="flex items-center gap-2 md:ml-auto">
+              <Button variant="secondary" className="rounded-full">
+                <ThumbsUp className="mr-2 h-5 w-5" /> 10K
+              </Button>
+              <Button variant="secondary" className="rounded-full">
+                <ThumbsDown className="h-5 w-5" />
+              </Button>
+              <Button variant="secondary" className="rounded-full">
+                <Share2 className="mr-2 h-5 w-5" /> Bagikan
+              </Button>
+              <Button variant="secondary" className="rounded-full" onClick={() => addToQueue(video)}>
+                <ListPlus className="mr-2 h-5 w-5" /> Tambahkan
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-secondary p-4 text-sm text-secondary-foreground">
+           <p className="mb-1 font-semibold">{video.views} &bull; {video.uploadedAt}</p>
+           <p>
+            Ini adalah deskripsi video placeholder. Di aplikasi nyata, deskripsi video akan dimuat dari API YouTube untuk memberikan konteks lebih lanjut tentang konten yang sedang diputar.
+           </p>
+        </div>
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 0', borderTop: '1px solid #303030', borderBottom: '1px solid #303030', marginBottom: '16px' }}>
-        <img
-            src={video.channelAvatarUrl}
-            alt={video.channelName}
-            style={{ height: '48px', width: '48px', borderRadius: '50%' }}
-          />
-        <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: '600', color: '#fff' }}>
-            {video.channelName}
-          </p>
-        </div>
-        <button 
-          onClick={() => setIsSubscribed(!isSubscribed)}
-          style={{
-            padding: '10px 16px',
-            fontSize: '14px',
-            borderRadius: '20px',
-            fontWeight: '600',
-            transition: 'background-color 0.2s',
-            background: isSubscribed ? '#303030' : '#fff',
-            color: isSubscribed ? '#aaa' : '#0f0f0f',
-            border: 'none',
-            cursor: 'pointer'
-          }}
-        >
-          {isSubscribed ? '✓ Disubscribe' : 'Subscribe'}
-        </button>
+      <div className="w-full lg:w-[400px] lg:min-w-[400px]">
+        <RecommendationSidebar />
       </div>
-
-      <div className="video-description-box">
-        <p style={{ fontSize: '14px', fontWeight: '500' }}>{video.views} &bull; {video.uploadedAt}</p>
-        <p style={{ fontSize: '14px', marginTop: '8px' }}>
-            Deskripsi video akan ditampilkan di sini. Konten ini adalah placeholder karena data deskripsi tidak diambil dari API untuk saat ini.
-        </p>
-      </div>
-
     </div>
   );
 }
+
