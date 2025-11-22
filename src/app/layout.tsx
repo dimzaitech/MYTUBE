@@ -35,18 +35,20 @@ export default function RootLayout({
 
   const renderMobileLayout = () => (
      <div className="mobile-container">
-        <div className="mobile-header">
+        <header className="mobile-header">
             <Link href="/" className="logo">
-                <i className="fab fa-youtube"></i> MyTUBE
+                <i className="fab fa-youtube"></i>
+                <span>MyTUBE</span>
             </Link>
             <div className="mobile-header-icons">
-                <i className="fas fa-search"></i>
+                <i className="fas fa-cast"></i>
                 <i className="fas fa-bell"></i>
+                <i className="fas fa-search"></i>
                  <Link href="/profile">
                     <i className="fas fa-user-circle"></i>
                 </Link>
             </div>
-        </div>
+        </header>
         <main className="mobile-main">
           {children}
         </main>
@@ -56,19 +58,16 @@ export default function RootLayout({
                 <span>Beranda</span>
             </Link>
             <a href="#" className="mobile-nav-item">
-                <i className="fas fa-compass"></i>
-                <span>Shorts</span>
+                <i className="fas fa-fire"></i>
+                <span>Trending</span>
             </a>
             <a href="#" className="mobile-nav-item">
-                <i className="fas fa-plus-circle" style={{ fontSize: '24px' }}></i>
-            </a>
-            <a href="#" className="mobile-nav-item">
-                <i className="fas fa-folder-play"></i>
-                <span>Langganan</span>
+                 <i className="fas fa-play-circle"></i>
+                <span>Subscription</span>
             </a>
             <Link href="/profile" className="mobile-nav-item">
-                <i className="fas fa-user-circle"></i>
-                 <span>Profil</span>
+                <i className="fas fa-user"></i>
+                 <span>Kamu</span>
             </Link>
         </nav>
     </div>
@@ -157,3 +156,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
