@@ -13,7 +13,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
 }
 
 body {
@@ -22,16 +22,92 @@ body {
     line-height: 1.4;
 }
 
+/* Mobile Header */
+.mobile-header {
+    background-color: var(--bg-primary);
+    padding: 0 16px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-header .logo {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.mobile-header .logo i {
+    color: var(--accent-red);
+    margin-right: 4px;
+    font-size: 20px;
+}
+
+.mobile-header-icons {
+    display: flex;
+    gap: 24px;
+}
+
+.mobile-header-icons i {
+    font-size: 20px;
+    color: var(--text-primary);
+}
+
+/* Mobile Navigation */
+.mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    z-index: 1000;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 10px;
+    gap: 4px;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.mobile-nav-item.active {
+    color: var(--text-primary);
+}
+
+.mobile-nav-item i {
+    font-size: 18px;
+}
+
+
 /* Header Styles */
 header {
     background-color: var(--bg-primary);
-    padding: 0 16px;
+    padding: 0 24px;
     position: sticky;
     top: 0;
     z-index: 100;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     border-bottom: 1px solid var(--border-color);
     height: 56px;
 }
@@ -43,6 +119,7 @@ header {
     display: flex;
     align-items: center;
     text-decoration: none;
+    margin-right: 32px;
 }
 
 .logo i {
@@ -416,10 +493,6 @@ footer {
     header {
       padding: 0 24px;
       justify-content: flex-start;
-    }
-
-    .logo {
-      margin-right: 32px;
     }
 
     /* Desktop Navigation - FIXED SINGLE ROW */
