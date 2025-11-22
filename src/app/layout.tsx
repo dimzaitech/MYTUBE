@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, type ReactNode, FormEventHandler } from 'react';
+import { useState, useEffect, type ReactNode, type FormEventHandler } from 'react';
 import './globals.css';
 import { QueueProvider } from '@/context/QueueContext';
 import Link from 'next/link';
@@ -28,8 +28,7 @@ export default function RootLayout({
     };
 
     window.addEventListener('resize', handleResize);
-    // Initial check
-    handleResize();
+    handleResize(); // Initial check
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -81,24 +80,8 @@ export default function RootLayout({
               <span>MyTUBE</span>
             </Link>
         </div>
-        <header className="desktop-header">
-            <form className="desktop-search" onSubmit={handleSearch}>
-                <input type="text" name="search" className="desktop-search-input" placeholder="Cari" defaultValue={searchQuery} />
-                <button type="submit" className="desktop-search-button">
-                    <i className="fas fa-search"></i>
-                </button>
-            </form>
-            <div className="desktop-header-icons">
-                <i className="fas fa-video"></i>
-                <i className="fas fa-bell"></i>
-                <Link href="/profile">
-                   <div className="user-avatar"></div>
-                </Link>
-            </div>
-        </header>
-
-        <div className="desktop-layout">
-            <div className="desktop-sidebar">
+        <aside className="desktop-sidebar">
+            <div className="desktop-sidebar-content">
                 <div className="sidebar-section">
                     <a href="#" className="sidebar-item active">
                         <i className="fas fa-home"></i> Beranda
@@ -122,10 +105,28 @@ export default function RootLayout({
                     </a>
                 </div>
             </div>
+        </aside>
+
+        <div className="desktop-main-area">
+            <header className="desktop-header">
+                <form className="desktop-search" onSubmit={handleSearch}>
+                    <input type="text" name="search" className="desktop-search-input" placeholder="Cari" defaultValue={searchQuery} />
+                    <button type="submit" className="desktop-search-button">
+                        <i className="fas fa-search"></i>
+                    </button>
+                </form>
+                <div className="desktop-header-icons">
+                    <i className="fas fa-video"></i>
+                    <i className="fas fa-bell"></i>
+                    <Link href="/profile">
+                       <div className="user-avatar"></div>
+                    </Link>
+                </div>
+            </header>
             
-            <div className="desktop-main">
+            <main className="desktop-main">
               {children}
-            </div>
+            </main>
         </div>
     </div>
   );
@@ -156,5 +157,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

@@ -196,34 +196,31 @@ function HomePageContent() {
 
 export default function Home() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const searchQuery = searchParams.get('q') || '';
   
-  // This is a bit of a trick to pass client-side handlers to a server component layout
-  // A better solution might involve a shared context for search.
-  const [page, setPage] = useState<React.ReactNode | null>(null);
-
-  useEffect(() => {
-    setPage(<HomePageContent />);
-  }, []);
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(name, value);
+      return params.toString();
+    },
+    [searchParams]
+  );
 
   const handleSearch: FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault();
-    const router = (event.target as any).router; // Not ideal, but works for this structure
-    const searchInput = (event.currentTarget.elements.namedItem('search') as HTMLInputElement | null);
-    if (searchInput && searchInput.value) {
-        const params = new URLSearchParams(window.location.search);
-        params.set('q', searchInput.value);
-        window.location.search = params.toString();
-    }
+      event.preventDefault();
+      const searchInput = (event.currentTarget.elements.namedItem('search') as HTMLInputElement | null);
+      if (searchInput && searchInput.value) {
+          router.push(`/?${createQueryString('q', searchInput.value)}`);
+      }
   };
 
   return (
     <RootLayout searchQuery={searchQuery} handleSearch={handleSearch}>
       <Suspense fallback={<div className="text-center p-8">Memuat...</div>}>
-        {page || <HomePageContent /> /* Render immediately on client */}
+        <HomePageContent />
       </Suspense>
     </RootLayout>
   )
 }
-
-    
