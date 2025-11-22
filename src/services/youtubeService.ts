@@ -98,7 +98,7 @@ function formatVideos(
     uploadedAt: formatTimeAgo(video.snippet.publishedAt),
     duration: formatDuration(video.contentDetails?.duration),
     thumbnailUrl: video.snippet.thumbnails.high.url,
-    channelAvatarUrl: channelAvatars[video.snippet.channelId] || '',
+    channelAvatarUrl: channelAvatars[video.snippet.channelId] || `https://avatar.vercel.sh/${video.snippet.channelId}.png`,
   }));
 }
 
@@ -262,7 +262,6 @@ export async function searchVideos(
     const mergedDetails = (searchData.items || []).map((item: any) => {
         const detail = videoDetailsMap.get(item.id.videoId);
         if (detail) {
-            // Gabungkan detail tanpa menimpa snippet dari pencarian
             return {
                 ...item,
                 ...detail,
@@ -270,7 +269,7 @@ export async function searchVideos(
                 snippet: {
                     ...item.snippet,
                     ...detail.snippet,
-                    title: item.snippet.title, // Prioritaskan judul dari hasil search
+                    title: item.snippet.title,
                 },
             };
         }
@@ -278,7 +277,7 @@ export async function searchVideos(
           ...item,
           id: item.id.videoId
         };
-    }).filter(Boolean); // Filter item yang mungkin tidak memiliki detail
+    }).filter(Boolean);
 
     const videos = await processVideos(mergedDetails, existingVideoIds);
     return { videos, nextPageToken: searchData.nextPageToken };

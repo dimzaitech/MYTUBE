@@ -69,7 +69,7 @@ function HomePageContent() {
     setError(null);
 
     try {
-        const existingVideoIds = new Set(videos.map(v => v.id));
+        const existingVideoIds = isNewSearch ? new Set<string>() : new Set(videos.map(v => v.id));
         const isSearch = !!searchQuery;
         const query = isSearch ? searchQuery : categoryQueries[activeCategory] || 'trending indonesia';
         
@@ -115,8 +115,7 @@ function HomePageContent() {
   // Infinite Scroll Logic
   useEffect(() => {
     const handleScroll = () => {
-        // Jangan muat lebih banyak jika sedang dalam proses, atau tidak ada token halaman berikutnya
-        if (loading || loadingMore || !nextPageToken) return;
+        if (loading || loadingMore || !nextPageToken || selectedVideo) return;
 
         if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 500) {
             fetchVideos(false);
@@ -125,7 +124,7 @@ function HomePageContent() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [loading, loadingMore, nextPageToken, fetchVideos]);
+  }, [loading, loadingMore, nextPageToken, fetchVideos, selectedVideo]);
 
 
   const handleCategorySelect = (category: string) => {
@@ -147,14 +146,11 @@ function HomePageContent() {
       setSelectedVideo(nextInQueue);
       return;
     }
-    handleClosePlayer();
+    setSelectedVideo(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVideo, playNextInQueue]);
 
-  const handleClosePlayer = () => {
-    setSelectedVideo(null);
-  };
-  
+
   const handleRetry = () => {
     fetchVideos(true);
   }
@@ -164,7 +160,7 @@ function HomePageContent() {
       <main>
         <VideoPlayer
           video={selectedVideo}
-          onClose={handleClosePlayer}
+          onClose={() => setSelectedVideo(null)}
           onEnd={playNextVideo}
         />
       </main>
@@ -174,13 +170,11 @@ function HomePageContent() {
   return (
     <>
       <div className="mobile-only">
-        <nav>
-          <CategoryTabs
-            categories={categories}
-            selectedCategory={activeCategory}
-            onCategorySelect={handleCategorySelect}
-          />
-        </nav>
+        <CategoryTabs
+          categories={categories}
+          selectedCategory={activeCategory}
+          onCategorySelect={handleCategorySelect}
+        />
         <main>
             <VideoGridDynamic
                 loading={loading}
@@ -193,9 +187,6 @@ function HomePageContent() {
                 searchQuery={searchQuery}
             />
         </main>
-        <footer className="mobile-only">
-          <p>MyTUBE &copy; 2024</p>
-        </footer>
       </div>
 
       <div className="desktop-main desktop-only">
@@ -221,7 +212,7 @@ function HomePageContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div>Memuat...</div>}>
+    <Suspense fallback={<div className="text-center p-8">Memuat...</div>}>
       <HomePageContent />
     </Suspense>
   )
