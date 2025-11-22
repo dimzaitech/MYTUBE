@@ -34,7 +34,7 @@
 
         /* Mobile Header */
         .mobile-header {
-            background-color: var(--bg-primary);
+            background-color: #0f0f0f;
             padding: 0 16px;
             height: 56px;
             display: flex;
@@ -45,7 +45,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #303030;
         }
         
         .mobile-header .logo {
@@ -53,24 +53,24 @@
             align-items: center;
             font-size: 18px;
             font-weight: 500;
-            color: var(--text-primary);
+            color: #ffffff;
             text-decoration: none;
         }
         
         .mobile-header .logo i {
-            color: var(--accent-red);
-            margin-right: 4px;
+            color: #ff0000;
+            margin-right: 8px;
             font-size: 20px;
         }
         
         .mobile-header-icons {
             display: flex;
-            gap: 24px;
+            gap: 16px;
         }
         
         .mobile-header-icons i {
             font-size: 20px;
-            color: var(--text-primary);
+            color: #ffffff;
         }
         
         /* Mobile Navigation */
@@ -116,9 +116,9 @@
 
         /* Categories Navigation - SINGLE ROW */
         .categories-container {
-            background-color: var(--bg-primary);
+            background-color: #0f0f0f;
             padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #303030;
             position: sticky;
             top: 56px;
             z-index: 999;

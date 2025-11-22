@@ -43,9 +43,6 @@ export default function RootLayout({
                 <i className="fas fa-cast"></i>
                 <i className="fas fa-bell"></i>
                 <i className="fas fa-search"></i>
-                 <Link href="/profile">
-                    <i className="fas fa-user-circle"></i>
-                </Link>
             </div>
         </header>
         <main className="mobile-main">
