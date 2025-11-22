@@ -43,6 +43,7 @@ export default function VideoCard({ video, onVideoClick, isDesktop }: VideoCardP
     )
   }
 
+  // Mobile layout uses different classes now
   return (
     <div
       className="mobile-video-item"

@@ -1,14 +1,13 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, FormEventHandler } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { searchVideos, type FormattedVideo } from '@/services/youtubeService';
 import { useSearchParams, useRouter } from 'next/navigation';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import { useQueue } from '@/context/QueueContext';
 import VideoGridDynamic from '@/components/videos/VideoGridDynamic';
 import CategoryTabs from '@/components/videos/CategoryTabs';
-import RootLayout from './layout';
 
 const categories = [
   'Semua',
@@ -59,24 +58,6 @@ function HomePageContent() {
   } = useQueue();
 
   const searchQuery = searchParams.get('q') || '';
-  
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set(name, value)
-      return params.toString()
-    },
-    [searchParams]
-  )
-
-  const handleSearch: FormEventHandler<HTMLFormElement> = (event) => {
-      event.preventDefault();
-      const searchInput = (event.currentTarget.elements.namedItem('search') as HTMLInputElement | null);
-      if (searchInput && searchInput.value) {
-          router.push(`/?${createQueryString('q', searchInput.value)}`);
-      }
-  };
-
 
   const fetchVideos = useCallback(async (isNewSearch = true, token?: string) => {
       if (isNewSearch) {
@@ -108,7 +89,7 @@ function HomePageContent() {
           setLoading(false);
           setLoadingMore(false);
       }
-  }, [searchQuery, activeCategory]); // videos dependency removed
+  }, [searchQuery, activeCategory, videos]);
 
 
   const fetchMoreVideos = useCallback(() => {
@@ -213,32 +194,9 @@ function HomePageContent() {
 }
 
 export default function Home() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const searchQuery = searchParams.get('q') || '';
-  
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(name, value);
-      return params.toString();
-    },
-    [searchParams]
-  );
-
-  const handleSearch: FormEventHandler<HTMLFormElement> = (event) => {
-      event.preventDefault();
-      const searchInput = (event.currentTarget.elements.namedItem('search') as HTMLInputElement | null);
-      if (searchInput && searchInput.value) {
-          router.push(`/?${createQueryString('q', searchInput.value)}`);
-      }
-  };
-
   return (
-    <RootLayout searchQuery={searchQuery} handleSearch={handleSearch}>
       <Suspense fallback={<div className="text-center p-8">Memuat...</div>}>
         <HomePageContent />
       </Suspense>
-    </RootLayout>
   )
 }

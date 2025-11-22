@@ -13,10 +13,20 @@ export default function RootLayout({
   children,
 }: { 
   children: ReactNode,
-  searchQuery?: string,
-  handleSearch?: FormEventHandler<HTMLFormElement>,
 }) {
   const [isMobile, setIsMobile] = useState(isClient ? window.innerWidth < 1024 : true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch: FormEventHandler<HTMLFormElement> = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const query = formData.get('search') as string;
+    // For now, just log it. We'll implement search routing later.
+    console.log("Search Query:", query);
+    // In a real app, you'd likely do:
+    // router.push(`/?q=${encodeURIComponent(query)}`);
+  };
+
 
   useEffect(() => {
     if (!isClient) return;
@@ -43,7 +53,10 @@ export default function RootLayout({
                 <i className="fas fa-search"></i>
             </div>
         </header>
+
+        {/* The main content including categories is now passed as children */}
         {children}
+
         <nav className="mobile-nav">
             <Link href="/" className="mobile-nav-item active">
                 <i className="fas fa-home"></i>
@@ -67,7 +80,7 @@ export default function RootLayout({
 
   const renderDesktopLayout = () => (
     <div className="desktop-container">
-        <div className="logo-container">
+       <div className="logo-container">
              <Link href="/" className="logo">
               <i className="fab fa-youtube"></i>
               <span>MyTUBE</span>
@@ -77,24 +90,24 @@ export default function RootLayout({
             <div className="desktop-sidebar-content">
                 <div className="sidebar-section">
                     <a href="#" className="sidebar-item active">
-                        <i className="fas fa-home"></i> Beranda
+                        <i className="fas fa-home"></i> <span>Beranda</span>
                     </a>
                     <a href="#" className="sidebar-item">
-                        <i className="fas fa-fire"></i> Trending
+                        <i className="fas fa-fire"></i> <span>Trending</span>
                     </a>
                     <a href="#" className="sidebar-item">
-                        <i className="fas fa-play-circle"></i> Langganan
+                        <i className="fas fa-play-circle"></i> <span>Langganan</span>
                     </a>
                 </div>
                 <div className="sidebar-section">
                      <a href="#" className="sidebar-item">
-                        <i className="fas fa-history"></i> Histori
+                        <i className="fas fa-history"></i> <span>Histori</span>
                     </a>
                     <a href="#" className="sidebar-item">
-                        <i className="fas fa-play-circle"></i> Video Anda
+                        <i className="fas fa-play-circle"></i> <span>Video Anda</span>
                     </a>
                      <a href="#" className="sidebar-item">
-                        <i className="fas fa-clock"></i> Tonton Nanti
+                        <i className="fas fa-clock"></i> <span>Tonton Nanti</span>
                     </a>
                 </div>
             </div>
@@ -102,8 +115,14 @@ export default function RootLayout({
 
         <div className="desktop-main-area">
             <header className="desktop-header">
-                <form className="desktop-search">
-                    <input type="text" name="search" className="desktop-search-input" placeholder="Cari" />
+                 <form className="desktop-search" onSubmit={handleSearch}>
+                    <input 
+                      type="text" 
+                      name="search" 
+                      className="desktop-search-input" 
+                      placeholder="Cari" 
+                      defaultValue={searchQuery}
+                    />
                     <button type="submit" className="desktop-search-button">
                         <i className="fas fa-search"></i>
                     </button>
@@ -117,6 +136,7 @@ export default function RootLayout({
                 </div>
             </header>
             
+            {/* The main content including categories is now passed as children */}
             {children}
         </div>
     </div>
