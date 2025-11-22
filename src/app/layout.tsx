@@ -87,7 +87,7 @@ export default function RootLayout({
                         <i className="fas fa-fire"></i> Trending
                     </a>
                     <a href="#" className="sidebar-item">
-                        <i className="fas fa-folder-play"></i> Langganan
+                        <i className="fas fa-play-circle"></i> Langganan
                     </a>
                 </div>
                 <div className="sidebar-section">
